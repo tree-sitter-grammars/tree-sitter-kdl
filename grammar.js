@@ -63,7 +63,7 @@ module.exports = grammar({
   name: 'kdl',
 
   conflicts: ($) => [
-    [$._node_space, $.linespace],
+    [$._node_space, $._linespace],
     [$.document],
     [$._node_space],
     [$.node_children],
@@ -80,9 +80,9 @@ module.exports = grammar({
     document: ($) =>
       field(
         'nodes', seq(
-          repeat($.linespace),
-          optional(seq($.node, repeat(seq(repeat($.linespace), $.node)))),
-          repeat($.linespace),
+          repeat($._linespace),
+          optional(seq($.node, repeat(seq(repeat($._linespace), $.node)))),
+          repeat($._linespace),
         ),
       ),
 
@@ -111,9 +111,9 @@ module.exports = grammar({
         optional(seq('/-', repeat($._node_space))),
         alias('{', $.start_bracket),
         seq(
-          repeat($.linespace),
-          optional(seq($.node, repeat(seq(repeat($.linespace), $.node)))),
-          repeat($.linespace),
+          repeat($._linespace),
+          optional(seq($.node, repeat(seq(repeat($._linespace), $.node)))),
+          repeat($._linespace),
         ),
         alias('}', $.end_bracket),
       ),
@@ -140,8 +140,8 @@ module.exports = grammar({
     // _normal_bare_identifier: ($) => $.__identifier_char_no_digit_sign,
     _normal_bare_identifier: () => token(
       seq(
-        /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
-        /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]*/,
+        /[\p{L}\p{M}\p{N}\p{Emoji}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
+        /[\p{L}\p{M}\p{N}\p{Emoji}_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]*/,
       ),
     ),
     // identifier-char := unicode - linespace - [\/(){}<>;[]=,"]
@@ -172,37 +172,41 @@ module.exports = grammar({
     // keyword := boolean | 'null'
     keyword: () => choice(...KEYWORDS),
     // type annotations
-    type_annotation: () => choice(...ANNOTATION_BUILTINS),
+    annotation_type: () => choice(...ANNOTATION_BUILTINS),
     // prop := identifier '=' value
     prop: ($) => seq($.identifier, '=', $.value),
     // value := type? (string | number | keyword)
     value: ($) => seq(optional($.type), choice($.string, $.number, $.keyword)),
     // type := '(' identifier ')'
-    type: ($) => seq('(', choice($.identifier, $.type_annotation), ')'),
+    type: ($) => seq('(', choice($.identifier, $.annotation_type), ')'),
 
     // String
     // string := raw-string | escaped-string
     string: ($) => choice($.raw_string, $.escaped_string),
     // escaped-string := '"' character* '"'
-    escaped_string: ($) => seq('"', repeat(choice($.escape, /[^"]/)), '"'),
+    escaped_string: ($) => seq('"', repeat(choice($._escape, /[^"]/)), '"'),
     // character := '\' escape | [^\"]
-    _character: ($) => choice($.escape, /[^"]/),
+    _character: ($) => choice($._escape, /[^"]/),
     // escape := ["\\/bfnrt] | 'u{' hex-digit{1, 6} '}'
-    escape: () =>
-      choice(
-        /\\"/,
-        /["\\/bfnrt]/,
-        seq('\\u{', repeat1(/[0-9a-fA-F]/), '}'),
-      ),
+    _escape: () => /\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}/,
     // hex-digit := [0-9a-fA-F]
     _hex_digit: () => /[0-9a-fA-F]/,
 
-    // raw-string := 'r' raw-string-hash
-    raw_string: ($) => seq('r', $._raw_string_hash),
-    // raw-string-hash := '#' raw-string-hash '#' | raw-string-quotes
-    _raw_string_hash: ($) => choice(seq('#', $._raw_string_hash, '#'), $._raw_string_quotes),
-    // raw-string-quotes := '"' .* '"'
-    _raw_string_quotes: () => seq('"', /.*/, '"'),
+    // // raw-string := 'r' raw-string-hash
+    // raw_string: ($) => seq('r', $._raw_string_hash),
+    // // raw-string-hash := '#' raw-string-hash '#' | raw-string-quotes
+    // _raw_string_hash: ($) => choice(seq('#', $._raw_string_hash, '#'), $._raw_string_quotes),
+    // // raw-string-quotes := '"' .* '"'
+    // _raw_string_quotes: () => seq('"', /.*/, '"'),
+    raw_string: () =>
+      seq(
+        choice(
+          // raw-string-hash := '#' raw-string-hash '#' | raw-string-quotes
+          seq(token.immediate(seq('r', repeat1('#'))), '"', /.*/, '"', repeat1('#')),
+          // raw-string-quotes := '"' .* '"'
+          seq(token.immediate(seq('r', '"')), /.*/, '"'),
+        ),
+      ),
 
     // number := decimal | hex | octal | binary
     number: ($) => choice($._decimal, $._hex, $._octal, $._binary),
@@ -238,7 +242,7 @@ module.exports = grammar({
     _escline: ($) => seq('\\', repeat($._ws), choice($.single_line_comment, $._newline)),
 
     // linespace := newline | ws | single-line-comment
-    linespace: ($) => choice($._newline, $._ws, $.single_line_comment),
+    _linespace: ($) => choice($._newline, $._ws, $.single_line_comment),
 
     // newline := See Table (All line-break white_space)
     // Newline
