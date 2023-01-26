@@ -179,10 +179,6 @@
             {
               "type": "SYMBOL",
               "name": "value"
-            },
-            {
-              "type": "SYMBOL",
-              "name": "type"
             }
           ]
         }
@@ -311,7 +307,7 @@
       "members": [
         {
           "type": "SYMBOL",
-          "name": "_string"
+          "name": "string"
         },
         {
           "type": "SYMBOL",
@@ -487,7 +483,7 @@
           "members": [
             {
               "type": "SYMBOL",
-              "name": "_string"
+              "name": "string"
             },
             {
               "type": "SYMBOL",
@@ -518,7 +514,7 @@
         }
       ]
     },
-    "_string": {
+    "string": {
       "type": "CHOICE",
       "members": [
         {
@@ -527,11 +523,11 @@
         },
         {
           "type": "SYMBOL",
-          "name": "_escaped_string"
+          "name": "escaped_string"
         }
       ]
     },
-    "_escaped_string": {
+    "escaped_string": {
       "type": "SEQ",
       "members": [
         {
@@ -579,6 +575,19 @@
         {
           "type": "PATTERN",
           "value": "[\"\\\\/bfnrt]"
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "\\\""
+            },
+            {
+              "type": "PATTERN",
+              "value": "[^\"]"
+            }
+          ]
         },
         {
           "type": "SEQ",
@@ -1221,10 +1230,10 @@
       ]
     },
     "_eof": {
-      "type": "IMMEDIATE_TOKEN",
+      "type": "PREC",
+      "value": -1,
       "content": {
-        "type": "PREC",
-        "value": -1,
+        "type": "IMMEDIATE_TOKEN",
         "content": {
           "type": "STRING",
           "value": "\u0000"
