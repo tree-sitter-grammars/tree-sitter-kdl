@@ -52,9 +52,10 @@ module.exports = grammar({
     [$.document],
     [$._node_space],
     [$.node_children],
+    [$._ws],
   ],
 
-  extras: ($) => [$.single_line_comment, $.multi_line_comment],
+  extras: ($) => [$.multi_line_comment],
 
   externals: ($) => [$._eof],
 
@@ -65,18 +66,23 @@ module.exports = grammar({
   rules: {
     // nodes := linespace* (node nodes?)? linespace*
     document: ($) =>
-      field(
-        'nodes', seq(
-          repeat($._linespace),
-          optional(seq($.node, repeat(seq(repeat($._linespace), $.node)))),
-          repeat($._linespace),
-        ),
+      seq(
+        repeat($._linespace),
+        optional(seq(
+          $.node,
+          repeat(seq(
+            repeat($._linespace),
+            $.node,
+          )),
+        )),
+        repeat($._linespace),
       ),
+
 
     // node := ('/-' node-space*)? type? identifier (node-space+ node-prop-or-arg)* (node-space* node-children ws*)? node-space* node-terminator
     node: ($) => prec(PREC.node,
       seq(
-        optional(seq('/-', repeat($._node_space))),
+        alias(optional(seq('/-', repeat($._node_space))), $.node_slash_dash),
         optional($.type),
         $.identifier,
         repeat(seq(repeat1($._node_space), $._node_prop_or_arg)),
@@ -89,13 +95,13 @@ module.exports = grammar({
     // node-prop-or-arg := ('/-' node-space*)? (prop | value)
     _node_prop_or_arg: ($) =>
       seq(
-        alias(optional(seq('/-', repeat($._node_space))), $.special_comment),
+        alias(optional(seq('/-', repeat($._node_space))), $.node_prop_or_arg_slash_dash),
         choice($.prop, $.value),
       ),
     // node-children := ('/-' node-space*)? '{' nodes '}'
     node_children: ($) =>
       seq(
-        optional(seq('/-', repeat($._node_space))),
+        optional(seq(alias('/-', $.node_children_slash_dash), repeat($._node_space))),
         '{',
         seq(
           repeat($._linespace),
