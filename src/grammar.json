@@ -909,8 +909,13 @@
                   "value": "."
                 },
                 {
-                  "type": "SYMBOL",
-                  "name": "_integer"
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_integer"
+                  },
+                  "named": true,
+                  "value": "decimal"
                 }
               ]
             },
@@ -923,8 +928,13 @@
           "type": "CHOICE",
           "members": [
             {
-              "type": "SYMBOL",
-              "name": "_exponent"
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_exponent"
+              },
+              "named": true,
+              "value": "exponent"
             },
             {
               "type": "BLANK"
