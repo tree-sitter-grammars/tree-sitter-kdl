@@ -1,23 +1,8 @@
 /* eslint-disable camelcase */
 
 const PREC = {
-  ws: 1,
-  bare_identifier: 2,
-
-  node_space: 8,
-  node_terminator: 8,
-
-  node: 9,
-
-  linespace: 10,
-
-  value: 11,
-  prop: 12,
-
-  identifier: 13,
+  node: 1,
 };
-
-const KEYWORDS = ['true', 'false', 'null'];
 
 const ANNOTATION_BUILTINS = [
   'i8',
@@ -73,6 +58,8 @@ module.exports = grammar({
 
   externals: ($) => [$._eof],
 
+  inline: ($) => [$._escape],
+
   word: ($) => $._normal_bare_identifier,
 
   rules: {
@@ -102,20 +89,20 @@ module.exports = grammar({
     // node-prop-or-arg := ('/-' node-space*)? (prop | value)
     _node_prop_or_arg: ($) =>
       seq(
-        optional(seq('/-', repeat($._node_space))),
+        alias(optional(seq('/-', repeat($._node_space))), $.special_comment),
         choice($.prop, $.value),
       ),
     // node-children := ('/-' node-space*)? '{' nodes '}'
     node_children: ($) =>
       seq(
         optional(seq('/-', repeat($._node_space))),
-        alias('{', $.start_bracket),
+        '{',
         seq(
           repeat($._linespace),
           optional(seq($.node, repeat(seq(repeat($._linespace), $.node)))),
           repeat($._linespace),
         ),
-        alias('}', $.end_bracket),
+        '}',
       ),
     // node-space := ws* escline ws* | ws+
     _node_space: ($) =>
@@ -124,19 +111,19 @@ module.exports = grammar({
         repeat1($._ws),
       ),
     // node-terminator := single-line-comment | newline | ';' | eof
-    _node_terminator: ($) => prec(PREC.node_terminator,
+    _node_terminator: ($) =>
       choice($.single_line_comment, $._newline, ';', $._eof),
-    ),
+
 
     // identifier := string | bare-identifier
-    identifier: ($) => prec(PREC.identifier, choice($.string, $._bare_identifier)),
+    identifier: ($) => choice($.string, $._bare_identifier),
     // bare-identifier := ((identifier-char - digit - sign) identifier-char* | sign ((identifier-char - digit) identifier-char*)?) - keyword
-    _bare_identifier: ($) => prec.right(PREC.bare_identifier,
+    _bare_identifier: ($) =>
       choice(
         $._normal_bare_identifier,
         seq($._sign, optional(seq($.__identifier_char_no_digit, repeat($._identifier_char)))),
       ),
-    ),
+
     // _normal_bare_identifier: ($) => $.__identifier_char_no_digit_sign,
     _normal_bare_identifier: () => token(
       seq(
@@ -146,31 +133,22 @@ module.exports = grammar({
     ),
     // identifier-char := unicode - linespace - [\/(){}<>;[]=,"]
     _identifier_char: () => token(
-      prec.right(
-        PREC.identifier,
-        /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]/,
-      ),
+      /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]/,
     ),
 
     // can't start with a digit
     __identifier_char_no_digit: () => token(
-      prec.right(
-        PREC.identifier,
-        /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
-      ),
+      /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
     ),
 
     // can't start with a digit or sign
     __identifier_char_no_digit_sign: () => token(
-      prec.right(
-        PREC.identifier,
-        /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\+\-\/(){}<>;\[\]=,"]]/,
-      ),
+      /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\+\-\/(){}<>;\[\]=,"]]/,
     ),
 
 
     // keyword := boolean | 'null'
-    keyword: () => choice(...KEYWORDS),
+    keyword: ($) => choice($.boolean, 'null'),
     // type annotations
     annotation_type: () => choice(...ANNOTATION_BUILTINS),
     // prop := identifier '=' value
@@ -182,13 +160,13 @@ module.exports = grammar({
 
     // String
     // string := raw-string | escaped-string
-    string: ($) => choice($.raw_string, $.escaped_string),
+    string: ($) => choice($._raw_string, $._escaped_string),
     // escaped-string := '"' character* '"'
-    escaped_string: ($) => seq('"', repeat(choice($._escape, /[^"]/)), '"'),
+    _escaped_string: ($) => seq('"', repeat(choice($._escape, /[^"]/)), '"'),
     // character := '\' escape | [^\"]
     _character: ($) => choice($._escape, /[^"]/),
     // escape := ["\\/bfnrt] | 'u{' hex-digit{1, 6} '}'
-    _escape: () => /\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}/,
+    _escape: ($) => alias(token.immediate(/\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}/), $.escape),
     // hex-digit := [0-9a-fA-F]
     _hex_digit: () => /[0-9a-fA-F]/,
 
@@ -198,7 +176,7 @@ module.exports = grammar({
     // _raw_string_hash: ($) => choice(seq('#', $._raw_string_hash, '#'), $._raw_string_quotes),
     // // raw-string-quotes := '"' .* '"'
     // _raw_string_quotes: () => seq('"', /.*/, '"'),
-    raw_string: () =>
+    _raw_string: () =>
       seq(
         choice(
           // raw-string-hash := '#' raw-string-hash '#' | raw-string-quotes
@@ -314,6 +292,5 @@ module.exports = grammar({
         '*/',
         seq(choice($.multi_line_comment, '*', '/', /[^*/]+/), $.commented_block),
       ),
-    // _eof: () => prec(-1, token.immediate('\0')),
   },
 });

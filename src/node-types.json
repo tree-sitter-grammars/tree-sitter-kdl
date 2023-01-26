@@ -5,6 +5,11 @@
     "fields": {}
   },
   {
+    "type": "boolean",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "commented_block",
     "named": true,
     "fields": {},
@@ -148,11 +153,6 @@
     }
   },
   {
-    "type": "escaped_string",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "identifier",
     "named": true,
     "fields": {},
@@ -170,7 +170,17 @@
   {
     "type": "keyword",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "boolean",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "multi_line_comment",
@@ -223,6 +233,10 @@
           "named": true
         },
         {
+          "type": "special_comment",
+          "named": true
+        },
+        {
           "type": "type",
           "named": true
         },
@@ -239,12 +253,8 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
-        {
-          "type": "end_bracket",
-          "named": true
-        },
         {
           "type": "multi_line_comment",
           "named": true
@@ -255,10 +265,6 @@
         },
         {
           "type": "single_line_comment",
-          "named": true
-        },
-        {
-          "type": "start_bracket",
           "named": true
         }
       ]
@@ -289,29 +295,39 @@
     }
   },
   {
-    "type": "raw_string",
+    "type": "single_line_comment",
     "named": true,
     "fields": {}
   },
   {
-    "type": "single_line_comment",
+    "type": "special_comment",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "multi_line_comment",
+          "named": true
+        },
+        {
+          "type": "single_line_comment",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "string",
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
-      "required": true,
+      "multiple": true,
+      "required": false,
       "types": [
         {
-          "type": "escaped_string",
-          "named": true
-        },
-        {
-          "type": "raw_string",
+          "type": "escape",
           "named": true
         }
       ]
@@ -532,7 +548,7 @@
     "named": false
   },
   {
-    "type": "end_bracket",
+    "type": "escape",
     "named": true
   },
   {
@@ -604,10 +620,6 @@
     "named": false
   },
   {
-    "type": "start_bracket",
-    "named": true
-  },
-  {
     "type": "time",
     "named": false
   },
@@ -649,6 +661,14 @@
   },
   {
     "type": "uuid",
+    "named": false
+  },
+  {
+    "type": "{",
+    "named": false
+  },
+  {
+    "type": "}",
     "named": false
   },
   {
