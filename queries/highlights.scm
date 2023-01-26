@@ -27,15 +27,18 @@
 
 (escape) @string.escape
 
-(number) @number
+((number) @number
+ (#is-not? float))
+
+(number (decimal) @float)
+(number (exponent) @float)
+(number (decimal) (exponent) @float)
 
 (boolean) @boolean
 
 ; Misc
 
-[
-  "null"
-] @constant.builtin
+"null" @constant.builtin
 
 ["{" "}"] @punctuation.bracket
 

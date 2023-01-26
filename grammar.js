@@ -194,9 +194,10 @@ module.exports = grammar({
       seq(
         optional($._sign),
         $._integer,
-        optional(seq('.', $._integer)),
-        optional($._exponent),
+        optional(seq('.', alias($._integer, $.decimal))),
+        optional(alias($._exponent, $.exponent)),
       ),
+
     // exponent := ('e' | 'E') sign? integer
     _exponent: ($) => seq(choice('e', 'E'), optional($._sign), $._integer),
     // integer := digit (digit | '_')*

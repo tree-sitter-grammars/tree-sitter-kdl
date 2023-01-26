@@ -29,6 +29,11 @@
     }
   },
   {
+    "type": "decimal",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "document",
     "named": true,
     "fields": {
@@ -153,6 +158,11 @@
     }
   },
   {
+    "type": "exponent",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "identifier",
     "named": true,
     "fields": {},
@@ -273,7 +283,21 @@
   {
     "type": "number",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "decimal",
+          "named": true
+        },
+        {
+          "type": "exponent",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "prop",
