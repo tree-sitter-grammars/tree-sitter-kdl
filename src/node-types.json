@@ -24,6 +24,11 @@
     }
   },
   {
+    "type": "escaped_string",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "identifier",
     "named": true,
     "fields": {},
@@ -40,11 +45,11 @@
           "named": true
         },
         {
-          "type": "raw_string",
+          "type": "single_line_comment",
           "named": true
         },
         {
-          "type": "single_line_comment",
+          "type": "string",
           "named": true
         }
       ]
@@ -136,10 +141,6 @@
           "named": true
         },
         {
-          "type": "type",
-          "named": true
-        },
-        {
           "type": "value",
           "named": true
         }
@@ -204,6 +205,25 @@
     "fields": {}
   },
   {
+    "type": "string",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "escaped_string",
+          "named": true
+        },
+        {
+          "type": "raw_string",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "type",
     "named": true,
     "fields": {},
@@ -224,7 +244,7 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "keyword",
@@ -235,7 +255,7 @@
           "named": true
         },
         {
-          "type": "raw_string",
+          "type": "string",
           "named": true
         },
         {
@@ -244,6 +264,10 @@
         }
       ]
     }
+  },
+  {
+    "type": "\u0000",
+    "named": false
   },
   {
     "type": "\t",
@@ -355,6 +379,10 @@
   },
   {
     "type": "\\",
+    "named": false
+  },
+  {
+    "type": "\\\"",
     "named": false
   },
   {

@@ -22,6 +22,8 @@ module.exports = grammar({
 
   extras: ($) => [$.single_line_comment, $.multi_line_comment],
 
+  // externals: ($) => [$._eof],
+
   rules: {
 	// nodes := linespace* (node nodes?)? linespace*
 	nodes: ($) => seq(
@@ -43,7 +45,7 @@ module.exports = grammar({
 	// node-prop-or-arg := ('/-' node-space*)? (prop | value)
 	node_prop_or_arg: ($) => seq(
 		optional(seq('/-', repeat($._node_space))),
-		choice($.prop, $.value, $.type)
+		choice($.prop, $.value)
 	),
 	// node-children := ('/-' node-space*)? '{' nodes '}'
 	_node_children: ($) => seq(
@@ -61,7 +63,7 @@ module.exports = grammar({
 	_node_terminator: ($) => prec(PREC.NODE_TERMINATOR, choice($.single_line_comment, $._newline, ';', $._eof)),
 
 	// identifier := string | bare-identifier
-	identifier: ($) => choice($._string, $._bare_identifier),
+	identifier: ($) => choice($.string, $._bare_identifier),
 	// bare-identifier := ((identifier-char - digit - sign) identifier-char* | sign ((identifier-char - digit) identifier-char*)?) - keyword
 	_bare_identifier: ($) => prec.right(PREC.BARE_IDENTIFIER, seq(
         choice(
@@ -77,19 +79,19 @@ module.exports = grammar({
 	// prop := identifier '=' value
 	prop: ($) => seq($.identifier, '=', $.value),
 	// value := type? (string | number | keyword)
-	value: ($) => seq(optional($.type), choice($._string, $.number, $.keyword)),
+	value: ($) => seq(optional($.type), choice($.string, $.number, $.keyword)),
 	// type := '(' identifier ')'
 	type: ($) => seq('(', $.identifier, ')'),
 
 	// String
 	// string := raw-string | escaped-string
-	_string: ($) => choice($.raw_string, $._escaped_string),
+	string: ($) => choice($.raw_string, $.escaped_string),
 	// escaped-string := '"' character* '"'
-	_escaped_string: ($) => seq('"', repeat(choice($._escape, /[^"]/)), '"'),
+	escaped_string: ($) => seq('"', repeat(choice($._escape, /[^"]/)), '"'),
 	// character := '\' escape | [^\"]
 	_character: ($) => choice($._escape, /[^"]/),
 	// escape := ["\\/bfnrt] | 'u{' hex-digit{1, 6} '}'
-	_escape: () => choice(/["\\/bfnrt]/, seq('u{', repeat1(/[0-9a-fA-F]/), '}')),
+	_escape: () => choice(/["\\/bfnrt]/, seq('\\"',/[^"]/), seq('u{', repeat1(/[0-9a-fA-F]/), '}')),
 	// hex-digit := [0-9a-fA-F]
 	_hex_digit: () => /[0-9a-fA-F]/,
 	
@@ -194,6 +196,6 @@ module.exports = grammar({
         '*/',
         seq(choice($.multi_line_comment, '*', '/', /[^*/]+/), $.commented_block)
     ),
-	_eof: () => token.immediate(prec(-1, '\u0000')),
+	_eof: () => prec(-1, token.immediate('\0')),
   },
 });
