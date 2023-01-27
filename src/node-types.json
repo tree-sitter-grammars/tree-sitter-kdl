@@ -134,15 +134,11 @@
           "named": true
         },
         {
-          "type": "node_prop_or_arg_slash_dash",
+          "type": "node_comment",
           "named": true
         },
         {
-          "type": "node_slash_dash",
-          "named": true
-        },
-        {
-          "type": "prop",
+          "type": "node_field",
           "named": true
         },
         {
@@ -151,10 +147,6 @@
         },
         {
           "type": "type",
-          "named": true
-        },
-        {
-          "type": "value",
           "named": true
         }
       ]
@@ -177,7 +169,7 @@
           "named": true
         },
         {
-          "type": "node_children_slash_dash",
+          "type": "node_children_comment",
           "named": true
         },
         {
@@ -188,7 +180,7 @@
     }
   },
   {
-    "type": "node_prop_or_arg_slash_dash",
+    "type": "node_comment",
     "named": true,
     "fields": {},
     "children": {
@@ -207,7 +199,30 @@
     }
   },
   {
-    "type": "node_slash_dash",
+    "type": "node_field",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "node_field_comment",
+          "named": true
+        },
+        {
+          "type": "prop",
+          "named": true
+        },
+        {
+          "type": "value",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "node_field_comment",
     "named": true,
     "fields": {},
     "children": {
@@ -219,7 +234,15 @@
           "named": true
         },
         {
+          "type": "prop",
+          "named": true
+        },
+        {
           "type": "single_line_comment",
+          "named": true
+        },
+        {
+          "type": "value",
           "named": true
         }
       ]
@@ -558,7 +581,7 @@
     "named": false
   },
   {
-    "type": "node_children_slash_dash",
+    "type": "node_children_comment",
     "named": true
   },
   {
