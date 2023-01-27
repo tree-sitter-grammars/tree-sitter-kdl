@@ -18,10 +18,6 @@
       "required": false,
       "types": [
         {
-          "type": "commented_block",
-          "named": true
-        },
-        {
           "type": "multi_line_comment",
           "named": true
         }
@@ -96,8 +92,8 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
-      "required": true,
+      "multiple": true,
+      "required": false,
       "types": [
         {
           "type": "commented_block",
@@ -384,10 +380,6 @@
     "named": false
   },
   {
-    "type": "*",
-    "named": false
-  },
-  {
     "type": "*/",
     "named": false
   },
@@ -401,10 +393,6 @@
   },
   {
     "type": ".",
-    "named": false
-  },
-  {
-    "type": "/",
     "named": false
   },
   {
