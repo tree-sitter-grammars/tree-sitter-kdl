@@ -52,18 +52,14 @@ module.exports = grammar({
   name: 'kdl',
 
   conflicts: ($) => [
-    [$._node_space, $._linespace],
     [$.document],
     [$._node_space],
     [$.node_children],
-    [$._ws],
   ],
 
   extras: ($) => [$.multi_line_comment],
 
   externals: ($) => [$._eof],
-
-  inline: ($) => [$._escape],
 
   word: ($) => $._normal_bare_identifier,
 
@@ -81,7 +77,6 @@ module.exports = grammar({
         )),
         repeat($._linespace),
       ),
-
 
     // node := ('/-' node-space*)? type? identifier (node-space+ node-prop-or-arg)* (node-space* node-children ws*)? node-space* node-terminator
     node: ($) => prec(PREC.node,
@@ -140,7 +135,7 @@ module.exports = grammar({
     // _normal_bare_identifier: ($) => $.__identifier_char_no_digit_sign,
     _normal_bare_identifier: () => token(
       seq(
-        /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
+        /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
         /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]*/,
       ),
     ),
@@ -159,7 +154,6 @@ module.exports = grammar({
       /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\+\-\/(){}<>;\[\]=,"]]/,
     ),
 
-
     // keyword := boolean | 'null'
     keyword: ($) => choice($.boolean, 'null'),
     // type annotations
@@ -175,16 +169,12 @@ module.exports = grammar({
     // string := raw-string | escaped-string
     string: ($) => choice($._raw_string, $._escaped_string),
     // escaped-string := '"' character* '"'
-    _escaped_string: ($) => seq('"', alias(repeat(choice($._escape, /[^"]/)), $.string_fragment), '"'),
+    _escaped_string: ($) => seq('"', alias(repeat(choice($.escape, /[^"]/)), $.string_fragment), '"'),
     // character := '\' escape | [^\"]
-    _character: ($) => choice($._escape, /[^"]/),
+    _character: ($) => choice($.escape, /[^"]/),
     // escape := ["\\/bfnrt] | 'u{' hex-digit{1, 6} '}'
-    _escape: ($) => alias(
-      token.immediate(
-        /\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}/,
-      ),
-      $.escape,
-    ),
+    escape: ($) =>
+      token.immediate(/\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}/),
     // hex-digit := [0-9a-fA-F]
     _hex_digit: () => /[0-9a-fA-F]/,
 
@@ -198,7 +188,8 @@ module.exports = grammar({
       seq(
         choice(
           // raw-string-hash := '#' raw-string-hash '#' | raw-string-quotes
-          seq(token.immediate(seq('r', repeat1('#'))), '"', /[^"]/, '"', repeat('#')),
+          // yes this isn't perfect but it works, ideally this should be handled in an external scanner
+          seq(token.immediate(seq('r', repeat1('#'))), /[^#]*/, repeat1('#')),
           // raw-string-quotes := '"' . '"'
           seq(token.immediate(seq('r', '"')), /[^"]*/, '"'),
         ),
