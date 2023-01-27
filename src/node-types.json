@@ -300,14 +300,14 @@
       "required": false,
       "types": [
         {
-          "type": "text",
+          "type": "string_fragment",
           "named": true
         }
       ]
     }
   },
   {
-    "type": "text",
+    "type": "string_fragment",
     "named": true,
     "fields": {},
     "children": {
