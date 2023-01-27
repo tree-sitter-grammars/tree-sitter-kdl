@@ -28,7 +28,8 @@ node prop="val"
           (prop
             (identifier)
             (value
-              (string))))))
+              (string
+                (string_fragment)))))))
 
 ==============
 Test Node Type
@@ -57,7 +58,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 =====================
 Test Raw String Quote
@@ -73,7 +75,8 @@ node "a\"b"
         (node_field
           (value
             (string
-              (escape))))))
+              (string_fragment
+                (escape)))))))
 
 ==================
 Test Arg Null Type
@@ -129,10 +132,12 @@ node "arg" "arg"
         (identifier)
         (node_field
           (value
-            (string)))
+            (string
+              (string_fragment))))
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ===================
 Test Arg False Type
@@ -195,7 +200,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 =========================
 Test Raw String Backslash
@@ -211,7 +217,8 @@ node "\\n"
         (node_field
           (value
             (string
-              (escape))))))
+              (string_fragment
+                (escape)))))))
 
 ========================
 Test Preserve Node Order
@@ -255,7 +262,8 @@ Test Empty Quoted Node Id
           (string))
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 =================
 Test Boolean Prop
@@ -306,7 +314,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ===================================
 Test Slashdash Only Node With Space
@@ -369,7 +378,8 @@ node key=(type)"str"
             (value
               (type
                 (identifier))
-              (string))))))
+              (string
+                (string_fragment)))))))
 
 =============================
 Test Unusual Chars In Bare Id
@@ -384,7 +394,8 @@ foo123~!@#$%^&*.:'|?+ "weeee"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 =================
 Test Just Newline
@@ -407,7 +418,8 @@ Test Quoted Node Name
     (document
       (node
         (identifier
-          (string))))
+          (string
+            (string_fragment)))))
 
 =================
 Test Numeric Prop
@@ -440,7 +452,8 @@ foo123~!@#$%^&*.:'|?+ "weeee"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ======================
 Test Only Line Comment
@@ -482,11 +495,13 @@ node "arg" "arg2\n"
         (identifier)
         (node_field
           (value
-            (string)))
+            (string
+              (string_fragment))))
         (node_field
           (value
             (string
-              (escape))))))
+              (string_fragment
+                (escape)))))))
 
 ===========================
 Test Only Line Comment Crlf
@@ -540,7 +555,8 @@ node "hello\nworld"
         (node_field
           (value
             (string
-              (escape))))))
+              (string_fragment
+                (escape)))))))
 
 ====================
 Test All Node Fields
@@ -686,9 +702,11 @@ node "0prop"="val"
         (node_field
           (prop
             (identifier
-              (string))
+              (string
+                (string_fragment)))
             (value
-              (string))))))
+              (string
+                (string_fragment)))))))
 
 ==========================
 Test Raw String Just Quote
@@ -704,7 +722,8 @@ node "\""
         (node_field
           (value
             (string
-              (escape))))))
+              (string_fragment
+                (escape)))))))
 
 ==============
 Test Prop Type
@@ -769,7 +788,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ====================
 Test Leading Newline
@@ -874,7 +894,8 @@ node arg="correct"
           (prop
             (identifier)
             (value
-              (string))))))
+              (string
+                (string_fragment)))))))
 
 ========================
 Test Underscore In Octal
@@ -958,7 +979,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 =============================
 Test Block Comment After Node
@@ -973,7 +995,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ====================
 Test Raw String Prop
@@ -993,7 +1016,8 @@ node_3 prop="#\"arg\"#\\n"
             (identifier)
             (value
               (string
-                (escape))))))
+                (string_fragment
+                  (escape)))))))
       (node
         (identifier)
         (node_field
@@ -1001,9 +1025,10 @@ node_3 prop="#\"arg\"#\\n"
             (identifier)
             (value
               (string
-                (escape)
-                (escape)
-                (escape))))))
+                (string_fragment
+                  (escape)
+                  (escape)
+                  (escape)))))))
       (node
         (identifier)
         (node_field
@@ -1011,9 +1036,10 @@ node_3 prop="#\"arg\"#\\n"
             (identifier)
             (value
               (string
-                (escape)
-                (escape)
-                (escape)))))))
+                (string_fragment
+                  (escape)
+                  (escape)
+                  (escape))))))))
 
 ============
 Test Only Cr
@@ -1037,7 +1063,8 @@ Test Quoted Node Type
       (node
         (type
           (identifier
-            (string)))
+            (string
+              (string_fragment))))
         (identifier)))
 
 ===============
@@ -1153,7 +1180,8 @@ node key=(type)"str"
             (value
               (type
                 (identifier))
-              (string))))))
+              (string
+                (string_fragment)))))))
 
 ==========================
 Test Block Comment Newline
@@ -1243,7 +1271,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 =============================
 Test Raw String Multiple Hash
@@ -1259,8 +1288,9 @@ node "\"#\"##"
         (node_field
           (value
             (string
-              (escape)
-              (escape))))))
+              (string_fragment
+                (escape)
+                (escape)))))))
 
 ================
 Test Boolean Arg
@@ -1297,7 +1327,8 @@ node (type)"str"
           (value
             (type
               (identifier))
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ===================================
 Test Nested Multiline Block Comment
@@ -1312,7 +1343,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 =================
 Test Positive Int
@@ -1365,7 +1397,8 @@ node (type)"arg"
           (value
             (type
               (identifier))
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ============================
 Test Trailing Underscore Hex
@@ -1395,7 +1428,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ====================
 Test Quoted Arg Type
@@ -1412,7 +1446,8 @@ node ("type/")10
           (value
             (type
               (identifier
-                (string)))
+                (string
+                  (string_fragment))))
             (number)))))
 
 ====================
@@ -1428,7 +1463,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ==============================
 Test Raw String Just Backslash
@@ -1442,7 +1478,8 @@ Test Raw String Just Backslash
       (node
         (identifier
           (string
-            (escape)))))
+            (string_fragment
+              (escape))))))
 
 ===================
 Test Commented Prop
@@ -1457,7 +1494,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 =======================
 Test Crlf Between Nodes
@@ -1518,9 +1556,10 @@ node "\nhello\nworld\n"
         (node_field
           (value
             (string
-              (escape)
-              (escape)
-              (escape))))))
+              (string_fragment
+                (escape)
+                (escape)
+                (escape)))))))
 
 ==========================
 Test Empty Child Same Line
@@ -1559,10 +1598,12 @@ node "whee" "whee"
         (identifier)
         (node_field
           (value
-            (string)))
+            (string
+              (string_fragment))))
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ==========================
 Test Empty Quoted Prop Key
@@ -1580,7 +1621,8 @@ node ""="empty"
             (identifier
               (string))
             (value
-              (string))))))
+              (string
+                (string_fragment)))))))
 
 ==========================
 Test Esc Unicode In String
@@ -1596,7 +1638,8 @@ node "hello\nworld"
         (node_field
           (value
             (string
-              (escape))))))
+              (string_fragment
+                (escape)))))))
 
 ===========
 Test Binary
@@ -1627,13 +1670,14 @@ node "\"\\/\b\f\n\r\t"
         (node_field
           (value
             (string
-              (escape)
-              (escape)
-              (escape)
-              (escape)
-              (escape)
-              (escape)
-              (escape))))))
+              (string_fragment
+                (escape)
+                (escape)
+                (escape)
+                (escape)
+                (escape)
+                (escape)
+                (escape)))))))
 
 ====================
 Test Arg String Type
@@ -1650,7 +1694,8 @@ node (type)"str"
           (value
             (type
               (identifier))
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ===================
 Test Quoted Numeric
@@ -1667,7 +1712,8 @@ node prop="10.0"
           (prop
             (identifier)
             (value
-              (string))))))
+              (string
+                (string_fragment)))))))
 
 ===========================
 Test Underscore In Exponent
@@ -1752,23 +1798,26 @@ node_3 "#\"arg\\n\"#and stuff"
         (node_field
           (value
             (string
-              (escape)))))
+              (string_fragment
+                (escape))))))
       (node
         (identifier)
         (node_field
           (value
             (string
-              (escape)
-              (escape)
-              (escape)))))
+              (string_fragment
+                (escape)
+                (escape)
+                (escape))))))
       (node
         (identifier)
         (node_field
           (value
             (string
-              (escape)
-              (escape)
-              (escape))))))
+              (string_fragment
+                (escape)
+                (escape)
+                (escape)))))))
 
 ================================
 Test Empty Child Different Lines
@@ -1854,12 +1903,14 @@ node 1 1.0 1.0E+10 1.0E-10 1 7 2 "arg" "arg\\\\" true false null
             (number)))
         (node_field
           (value
-            (string)))
+            (string
+              (string_fragment))))
         (node_field
           (value
             (string
-              (escape)
-              (escape))))
+              (string_fragment
+                (escape)
+                (escape)))))
         (node_field
           (value
             (keyword
@@ -1966,7 +2017,8 @@ node key=("type/")true
             (value
               (type
                 (identifier
-                  (string)))
+                  (string
+                    (string_fragment))))
               (keyword
                 (boolean)))))))
 
@@ -1983,7 +2035,8 @@ node "arg2"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ====================
 Test Nested Children
@@ -2104,7 +2157,8 @@ node "😀"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ====================================
 Test Slashdash Arg After Newline Esc
@@ -2119,7 +2173,8 @@ node "arg2"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ==============================
 Test Only Line Comment Newline
@@ -2144,7 +2199,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ===========================
 Test Arg And Prop Same Name
@@ -2159,12 +2215,14 @@ node "arg" arg="val"
         (identifier)
         (node_field
           (value
-            (string)))
+            (string
+              (string_fragment))))
         (node_field
           (prop
             (identifier)
             (value
-              (string))))))
+              (string
+                (string_fragment)))))))
 
 =====================
 Test Multiline String
@@ -2180,9 +2238,10 @@ node " hey\neveryone\nhow goes?\n"
         (node_field
           (value
             (string
-              (escape)
-              (escape)
-              (escape))))))
+              (string_fragment
+                (escape)
+                (escape)
+                (escape)))))))
 
 =================
 Test Negative Int
@@ -2217,7 +2276,8 @@ node "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ==================
 Test Prop Hex Type
@@ -2282,7 +2342,8 @@ r "arg"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 =============
 Test Zero Arg
@@ -2327,7 +2388,8 @@ Test Bare Emoji
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ===========================
 Test Underscore In Fraction
@@ -2358,10 +2420,12 @@ node "arg1" "arg2"
         (identifier)
         (node_field
           (value
-            (string)))
+            (string
+              (string_fragment))))
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ==============================
 Test Slashdash Node With Child
@@ -2436,7 +2500,8 @@ node prop="val"
           (prop
             (identifier)
             (value
-              (string))))))
+              (string
+                (string_fragment)))))))
 
 =======================
 Test Sci Notation Small
@@ -2543,7 +2608,8 @@ node "#"
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (string_fragment))))))
 
 ==================
 Test Raw Node Type
@@ -2571,7 +2637,8 @@ Test Raw Node Name
       (node
         (identifier
           (string
-            (escape)))))
+            (string_fragment
+              (escape))))))
 
 ========================
 Test Hex Int Underscores
