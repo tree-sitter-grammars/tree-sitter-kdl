@@ -1,0 +1,3 @@
+src/grammar.json -diff
+src/node-types.json -diff
+src/parser.c -diff
