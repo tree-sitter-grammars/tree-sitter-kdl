@@ -157,7 +157,7 @@ enum {
   alias_sym_decimal = 138,
   alias_sym_node_children_comment = 139,
   alias_sym_node_field_comment = 140,
-  alias_sym_text = 141,
+  alias_sym_string_fragment = 141,
 };
 
 static const char * const ts_symbol_names[] = {
@@ -302,7 +302,7 @@ static const char * const ts_symbol_names[] = {
   [alias_sym_decimal] = "decimal",
   [alias_sym_node_children_comment] = "node_children_comment",
   [alias_sym_node_field_comment] = "node_field_comment",
-  [alias_sym_text] = "text",
+  [alias_sym_string_fragment] = "string_fragment",
 };
 
 static const TSSymbol ts_symbol_map[] = {
@@ -447,7 +447,7 @@ static const TSSymbol ts_symbol_map[] = {
   [alias_sym_decimal] = alias_sym_decimal,
   [alias_sym_node_children_comment] = alias_sym_node_children_comment,
   [alias_sym_node_field_comment] = alias_sym_node_field_comment,
-  [alias_sym_text] = alias_sym_text,
+  [alias_sym_string_fragment] = alias_sym_string_fragment,
 };
 
 static const TSSymbolMetadata ts_symbol_metadata[] = {
@@ -1015,7 +1015,7 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
     .visible = true,
     .named = true,
   },
-  [alias_sym_text] = {
+  [alias_sym_string_fragment] = {
     .visible = true,
     .named = true,
   },
@@ -1060,7 +1060,7 @@ static const TSFieldMapEntry ts_field_map_entries[] = {
 static const TSSymbol ts_alias_sequences[PRODUCTION_ID_COUNT][MAX_ALIAS_SEQUENCE_LENGTH] = {
   [0] = {0},
   [1] = {
-    [1] = alias_sym_text,
+    [1] = alias_sym_string_fragment,
   },
   [4] = {
     [1] = anon_sym_SLASH_DASH,
@@ -1110,7 +1110,7 @@ static const uint16_t ts_non_terminal_alias_map[] = {
     anon_sym_SLASH_DASH,
   aux_sym__escaped_string_repeat1, 2,
     aux_sym__escaped_string_repeat1,
-    alias_sym_text,
+    alias_sym_string_fragment,
   0,
 };
 

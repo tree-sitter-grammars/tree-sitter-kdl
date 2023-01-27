@@ -754,7 +754,7 @@
             }
           },
           "named": true,
-          "value": "text"
+          "value": "string_fragment"
         },
         {
           "type": "STRING",
