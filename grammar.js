@@ -250,13 +250,13 @@ module.exports = grammar({
     // │  PS       Paragraph Separator            U+2029          │
     // ╰──────────────────────────────────────────────────────────╯
     // Note that for the purpose of new lines, CRLF is considered a single newline.
-    _newline: () => choice('\r', '\n', '\r\n', '\u0085', '\u000C', '\u2028', '\u2029'),
+    _newline: () => choice(/\r'/, /\n/, /\r\n/, /\u0085/, /\u000C/, /\u2028/, /\u2029/),
 
     // ws := bom | unicode-space | multi-line-comment
     _ws: ($) => choice($._bom, $._unicode_space, $.multi_line_comment),
 
     // bom := '\u{FEFF}'
-    _bom: () => '\u{FEFF}',
+    _bom: () => /\u{FEFF}/,
 
     // unicode-space := See Table (All White_Space unicode characters which are not `newline`)
     // Whitespace
@@ -283,11 +283,8 @@ module.exports = grammar({
     // │  Medium Mathematical Space U+205F  │
     // │  Ideographic Space         U+3000  │
     // ╰────────────────────────────────────╯
-    _unicode_space: () => choice(
-      '\u0009', '\u0020', '\u00A0', '\u1680', '\u2000', '\u2001',
-      '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007',
-      '\u2008', '\u2009', '\u200A', '\u202F', '\u205F', '\u3000',
-    ),
+    _unicode_space: () =>
+      /[\u0009\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000]/,
 
     // single-line-comment := '//' ^newline+ (newline | eof)
     single_line_comment: ($) =>
