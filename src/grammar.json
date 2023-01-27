@@ -90,7 +90,7 @@
               ]
             },
             "named": true,
-            "value": "node_slash_dash"
+            "value": "node_comment"
           },
           {
             "type": "CHOICE",
@@ -122,7 +122,7 @@
                 },
                 {
                   "type": "SYMBOL",
-                  "name": "_node_prop_or_arg"
+                  "name": "node_field"
                 }
               ]
             }
@@ -176,50 +176,54 @@
         ]
       }
     },
-    "_node_prop_or_arg": {
-      "type": "SEQ",
+    "node_field": {
+      "type": "CHOICE",
       "members": [
         {
-          "type": "ALIAS",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "STRING",
-                    "value": "/-"
-                  },
-                  {
-                    "type": "REPEAT",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "_node_space"
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "BLANK"
-              }
-            ]
-          },
-          "named": true,
-          "value": "node_prop_or_arg_slash_dash"
+          "type": "SYMBOL",
+          "name": "_node_field_comment"
         },
         {
-          "type": "CHOICE",
-          "members": [
-            {
+          "type": "SYMBOL",
+          "name": "_node_field"
+        }
+      ]
+    },
+    "_node_field_comment": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "/-"
+          },
+          {
+            "type": "REPEAT",
+            "content": {
               "type": "SYMBOL",
-              "name": "prop"
-            },
-            {
-              "type": "SYMBOL",
-              "name": "value"
+              "name": "_node_space"
             }
-          ]
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_node_field"
+          }
+        ]
+      },
+      "named": true,
+      "value": "node_field_comment"
+    },
+    "_node_field": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "prop"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "value"
         }
       ]
     },
@@ -239,7 +243,7 @@
                     "value": "/-"
                   },
                   "named": true,
-                  "value": "node_children_slash_dash"
+                  "value": "node_children_comment"
                 },
                 {
                   "type": "REPEAT",

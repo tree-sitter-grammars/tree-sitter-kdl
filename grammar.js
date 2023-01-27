@@ -82,26 +82,29 @@ module.exports = grammar({
     // node := ('/-' node-space*)? type? identifier (node-space+ node-prop-or-arg)* (node-space* node-children ws*)? node-space* node-terminator
     node: ($) => prec(PREC.node,
       seq(
-        alias(optional(seq('/-', repeat($._node_space))), $.node_slash_dash),
+        alias(optional(seq('/-', repeat($._node_space))), $.node_comment),
         optional($.type),
         $.identifier,
-        repeat(seq(repeat1($._node_space), $._node_prop_or_arg)),
+        repeat(seq(repeat1($._node_space), $.node_field)),
         optional(seq(repeat($._node_space), field('children', $.node_children), repeat($._ws))),
         repeat($._node_space),
         $._node_terminator,
       ),
     ),
 
-    // node-prop-or-arg := ('/-' node-space*)? (prop | value)
-    _node_prop_or_arg: ($) =>
-      seq(
-        alias(optional(seq('/-', repeat($._node_space))), $.node_prop_or_arg_slash_dash),
-        choice($.prop, $.value),
-      ),
+    // node-prop-or-arg (field) := ('/-' node-space*)? (prop | value)
+    // _node_prop_or_arg: ($) =>
+    //   seq(
+    //     alias(optional(seq('/-', repeat($._node_space))), $.node_prop_or_arg_slash_dash),
+    //     field('node_prop_or_arg', choice($.prop, $.value)),
+    //   ),
+    node_field: ($) => choice($._node_field_comment, $._node_field),
+    _node_field_comment: ($) => alias(seq('/-', repeat($._node_space), $._node_field), $.node_field_comment),
+    _node_field: ($) => choice($.prop, $.value),
     // node-children := ('/-' node-space*)? '{' nodes '}'
     node_children: ($) =>
       seq(
-        optional(seq(alias('/-', $.node_children_slash_dash), repeat($._node_space))),
+        optional(seq(alias('/-', $.node_children_comment), repeat($._node_space))),
         '{',
         seq(
           repeat($._linespace),
