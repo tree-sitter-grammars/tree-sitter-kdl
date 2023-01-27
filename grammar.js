@@ -140,23 +140,23 @@ module.exports = grammar({
     // _normal_bare_identifier: ($) => $.__identifier_char_no_digit_sign,
     _normal_bare_identifier: () => token(
       seq(
-        /[\p{L}\p{M}\p{N}\p{Emoji}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
-        /[\p{L}\p{M}\p{N}\p{Emoji}_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]*/,
+        /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
+        /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]*/,
       ),
     ),
     // identifier-char := unicode - linespace - [\/(){}<>;[]=,"]
     _identifier_char: () => token(
-      /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]/,
+      /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]/,
     ),
 
     // can't start with a digit
     __identifier_char_no_digit: () => token(
-      /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
+      /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
     ),
 
     // can't start with a digit or sign
     __identifier_char_no_digit_sign: () => token(
-      /[\p{L}\p{M}\p{N}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\+\-\/(){}<>;\[\]=,"]]/,
+      /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\+\-\/(){}<>;\[\]=,"]]/,
     ),
 
 
@@ -179,7 +179,12 @@ module.exports = grammar({
     // character := '\' escape | [^\"]
     _character: ($) => choice($._escape, /[^"]/),
     // escape := ["\\/bfnrt] | 'u{' hex-digit{1, 6} '}'
-    _escape: ($) => alias(token.immediate(/\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}/), $.escape),
+    _escape: ($) => alias(
+      token.immediate(
+        /\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}/,
+      ),
+      $.escape,
+    ),
     // hex-digit := [0-9a-fA-F]
     _hex_digit: () => /[0-9a-fA-F]/,
 
@@ -193,11 +198,12 @@ module.exports = grammar({
       seq(
         choice(
           // raw-string-hash := '#' raw-string-hash '#' | raw-string-quotes
-          seq(token.immediate(seq('r', repeat1('#'))), '"', /.*/, '"', repeat1('#')),
-          // raw-string-quotes := '"' .* '"'
-          seq(token.immediate(seq('r', '"')), /.*/, '"'),
+          seq(token.immediate(seq('r', repeat1('#'))), '"', /[^"]/, '"', repeat('#')),
+          // raw-string-quotes := '"' . '"'
+          seq(token.immediate(seq('r', '"')), /[^"]*/, '"'),
         ),
       ),
+
 
     // number := decimal | hex | octal | binary
     number: ($) => choice($._decimal, $._hex, $._octal, $._binary),
@@ -295,12 +301,13 @@ module.exports = grammar({
         choice($._newline, $._eof),
       ),
     // multi-line-comment := '/*' commented-block
-    multi_line_comment: ($) => seq('/*', $.commented_block),
+    multi_line_comment: ($) =>
+      seq('/*', repeat(prec.right(2, choice($.commented_block, /[^*\/]/))), '*/'),
     // commented-block := '*/' | (multi-line-comment | '*' | '/' | [^*/]+) commented-block
     commented_block: ($) =>
-      choice(
-        '*/',
-        seq(choice($.multi_line_comment, '*', '/', /[^*/]+/), $.commented_block),
-      ),
+      prec.right(1, seq(
+        /[^*\/]/,
+        repeat(choice($.multi_line_comment, /[^*\/]/)),
+      )),
   },
 });
