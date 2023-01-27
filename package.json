@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "KDL grammar for tree-sitter",
   "main": "bindings/node",
+  "keywords": [
+    "parser",
+    "lexer"
+  ],
+  "author": "Amaan Qureshi",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,7 +15,6 @@
     "type": "git",
     "url": "git+https://github.com/amaanq/tree-sitter-kdl.git"
   },
-  "author": "Amaan Qureshi",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/amaanq/tree-sitter-kdl/issues"
@@ -20,6 +24,7 @@
     "nan": "^2.17.0"
   },
   "devDependencies": {
+    "@types/node": "^18.11.18",
     "eslint": "^8.32.0",
     "eslint-config-google": "^0.14.0",
     "tree-sitter-cli": "^0.20.7"

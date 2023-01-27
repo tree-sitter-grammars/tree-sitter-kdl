@@ -736,20 +736,25 @@
           "value": "\""
         },
         {
-          "type": "REPEAT",
+          "type": "ALIAS",
           "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "_escape"
-              },
-              {
-                "type": "PATTERN",
-                "value": "[^\"]"
-              }
-            ]
-          }
+            "type": "REPEAT",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "_escape"
+                },
+                {
+                  "type": "PATTERN",
+                  "value": "[^\"]"
+                }
+              ]
+            }
+          },
+          "named": true,
+          "value": "text"
         },
         {
           "type": "STRING",
@@ -1228,32 +1233,32 @@
       "type": "CHOICE",
       "members": [
         {
-          "type": "STRING",
-          "value": "\r"
+          "type": "PATTERN",
+          "value": "\\r'"
         },
         {
-          "type": "STRING",
-          "value": "\n"
+          "type": "PATTERN",
+          "value": "\\n"
         },
         {
-          "type": "STRING",
-          "value": "\r\n"
+          "type": "PATTERN",
+          "value": "\\r\\n"
         },
         {
-          "type": "STRING",
-          "value": ""
+          "type": "PATTERN",
+          "value": "\\u0085"
         },
         {
-          "type": "STRING",
-          "value": "\f"
+          "type": "PATTERN",
+          "value": "\\u000C"
         },
         {
-          "type": "STRING",
-          "value": " "
+          "type": "PATTERN",
+          "value": "\\u2028"
         },
         {
-          "type": "STRING",
-          "value": " "
+          "type": "PATTERN",
+          "value": "\\u2029"
         }
       ]
     },
@@ -1275,85 +1280,12 @@
       ]
     },
     "_bom": {
-      "type": "STRING",
-      "value": "﻿"
+      "type": "PATTERN",
+      "value": "\\u{FEFF}"
     },
     "_unicode_space": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "\t"
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": " "
-        },
-        {
-          "type": "STRING",
-          "value": "　"
-        }
-      ]
+      "type": "PATTERN",
+      "value": "[\\u0009\\u0020\\u00A0\\u1680\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200A\\u202F\\u205F\\u3000]"
     },
     "single_line_comment": {
       "type": "SEQ",
