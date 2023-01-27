@@ -1,0 +1,11 @@
+// This entire node and its children are all commented out.
+/-mynode "foo" key=1 {
+  a
+  b
+  c
+}
+
+mynode /-"commented" "not commented" /-key="value" /-{
+  a
+  b
+}

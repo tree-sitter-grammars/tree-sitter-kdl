@@ -1,0 +1,11 @@
+// C style
+
+/*
+C style multiline
+*/
+
+tag /*foo=true*/ bar=false
+
+/*/*
+hello
+*/*/
