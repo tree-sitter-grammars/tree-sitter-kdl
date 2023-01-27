@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-control-regex
 // eslint-disable camelcase
 // eslint-disable-next-line spaced-comment
 /// <reference types="tree-sitter-cli/dsl" />
@@ -290,7 +291,6 @@ module.exports = grammar({
     single_line_comment: ($) =>
       seq(
         '//',
-        // deno-lint-ignore no-control-regex
         repeat1(/[^\r\n\u0085\u000C\u2028\u2029]/),
         choice($._newline, $._eof),
       ),
