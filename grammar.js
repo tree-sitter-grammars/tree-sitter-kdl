@@ -1,4 +1,7 @@
-/* eslint-disable camelcase */
+// eslint-disable camelcase
+// eslint-disable-next-line spaced-comment
+/// <reference types="tree-sitter-cli/dsl" />
+// @ts-check
 
 const PREC = {
   node: 1,
