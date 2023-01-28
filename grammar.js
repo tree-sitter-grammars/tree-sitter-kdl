@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-control-regex
-// eslint-disable camelcase
-// eslint-disable-next-line spaced-comment
+/* eslint-disable camelcase */
+/* eslint-disable-next-line spaced-comment */
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
@@ -135,7 +135,7 @@ module.exports = grammar({
     // _normal_bare_identifier: ($) => $.__identifier_char_no_digit_sign,
     _normal_bare_identifier: () => token(
       seq(
-        /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
+        /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}_~!@#\$%\^&\*.:'\|\?&&[^\s\d\/(){}<>;\[\]=,"]]/,
         /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]*/,
       ),
     ),
@@ -151,7 +151,7 @@ module.exports = grammar({
 
     // can't start with a digit or sign
     __identifier_char_no_digit_sign: () => token(
-      /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\+\-\/(){}<>;\[\]=,"]]/,
+      /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?&&[^\s\d\+\-\/(){}<>;\[\]=,"]]/,
     ),
 
     // keyword := boolean | 'null'
@@ -173,7 +173,7 @@ module.exports = grammar({
     // character := '\' escape | [^\"]
     _character: ($) => choice($.escape, /[^"]/),
     // escape := ["\\/bfnrt] | 'u{' hex-digit{1, 6} '}'
-    escape: ($) =>
+    escape: () =>
       token.immediate(/\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}/),
     // hex-digit := [0-9a-fA-F]
     _hex_digit: () => /[0-9a-fA-F]/,
