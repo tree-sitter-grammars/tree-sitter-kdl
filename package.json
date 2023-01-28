@@ -7,26 +7,32 @@
     "parser",
     "lexer"
   ],
-  "author": "Amaan Qureshi",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/amaanq/tree-sitter-kdl.git"
-  },
-  "license": "ISC",
+  "author": "Amaan Qureshi <amaanq12@gmail.com>",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/amaanq/tree-sitter-kdl/issues"
   },
-  "homepage": "https://github.com/amaanq/tree-sitter-kdl#readme",
   "dependencies": {
     "nan": "^2.17.0"
   },
   "devDependencies": {
-    "@types/node": "^18.11.18",
     "eslint": "^8.32.0",
     "eslint-config-google": "^0.14.0",
     "tree-sitter-cli": "^0.20.7"
-  }
+  },
+  "repository": "https://github.com/amaanq/tree-sitter-kdl",
+  "scripts": {
+    "build": "tree-sitter generate && node-gyp build",
+    "test": "tree-sitter test && script/parse-examples",
+    "parse": "tree-sitter parse",
+    "test-windows": "tree-sitter test"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.kdl",
+      "file-types": [
+        "kdl"
+      ]
+    }
+  ]
 }
