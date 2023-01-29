@@ -32,6 +32,9 @@
       "scope": "source.kdl",
       "file-types": [
         "kdl"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
       ]
     }
   ]
