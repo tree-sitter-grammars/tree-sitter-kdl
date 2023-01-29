@@ -1,10 +1,7 @@
 # tree-sitter-kdl
 
-<p>
-<a href="https://discord.gg/w7nTvsVJhm">
-    <img src="https://img.shields.io/discord/1063097320771698699?logo=discord"
-        alt="Chat on Discord"></a>
-</p>
+[![Build Status](https://github.com/amaanq/tree-sitter-kdl/workflows/CI/badge.svg)](https://github.com/amaanq/tree-sitter-kdl/workflows/CI/badge.svg)
+[![Discord](https://img.shields.io/discord/1063097320771698699?logo=discord)](https://discord.gg/w7nTvsVJhm)
 
 KDL grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter)
 
