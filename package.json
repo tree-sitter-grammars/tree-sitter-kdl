@@ -5,7 +5,8 @@
   "main": "bindings/node",
   "keywords": [
     "parser",
-    "lexer"
+    "lexer",
+    "kdl"
   ],
   "author": "Amaan Qureshi <amaanq12@gmail.com>",
   "contributors": [
