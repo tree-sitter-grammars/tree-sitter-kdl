@@ -1,4 +1,4 @@
-name: Fuzz parser
+name: Fuzz Parser
 
 on:
   push:

@@ -8,6 +8,9 @@
     "lexer"
   ],
   "author": "Amaan Qureshi <amaanq12@gmail.com>",
+  "contributors": [
+    "Andrew Hlynskyi <ahlincq@gmail.com>"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/amaanq/tree-sitter-kdl/issues"
