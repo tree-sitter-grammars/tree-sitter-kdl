@@ -2,9 +2,8 @@
  * @file KDL grammar for tree-sitter
  * @author Amaan Qureshi <amaanq12@gmail.com>
  * @license MIT
- * @see {@link https://www.pathofexile.com/item-filter/about|official syntax spec}
- * @see {@link https://pathofexile.fandom.com/wiki/Guide:Item_filter#Syntax|wiki guide}
- * @see {@link https://www.filterblade.xyz/|filter generator}
+ * @see {@link https://kdl.dev|official website}
+ * @see {@link https://github.com/kdl-org/kdl/blob/main/SPEC.md|official syntax spec}
  */
 
 // deno-lint-ignore-file no-control-regex
