@@ -13,10 +13,6 @@
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
-const PREC = {
-  node: 1,
-};
-
 const ANNOTATION_BUILTINS = [
   'i8',
   'i16',
@@ -88,7 +84,7 @@ module.exports = grammar({
       ),
 
     // node := ('/-' node-space*)? type? identifier (node-space+ node-prop-or-arg)* (node-space* node-children ws*)? node-space* node-terminator
-    node: $ => prec(PREC.node,
+    node: $ => prec(1,
       seq(
         alias(optional(seq('/-', repeat($._node_space))), $.node_comment),
         optional($.type),
@@ -141,31 +137,31 @@ module.exports = grammar({
       ),
 
     // _normal_bare_identifier: $ => $.__identifier_char_no_digit_sign,
-    _normal_bare_identifier: () => token(
+    _normal_bare_identifier: _ => token(
       seq(
         /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}_~!@#\$%\^&\*.:'\|\?&&[^\s\d\/(){}<>;\[\]=,"]]/,
         /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]*/,
       ),
     ),
     // identifier-char := unicode - linespace - [\/(){}<>;[]=,"]
-    _identifier_char: () => token(
+    _identifier_char: _ => token(
       /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]/,
     ),
 
     // can't start with a digit
-    __identifier_char_no_digit: () => token(
+    __identifier_char_no_digit: _ => token(
       /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]/,
     ),
 
     // can't start with a digit or sign
-    __identifier_char_no_digit_sign: () => token(
+    __identifier_char_no_digit_sign: _ => token(
       /[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?&&[^\s\d\+\-\/(){}<>;\[\]=,"]]/,
     ),
 
     // keyword := boolean | 'null'
     keyword: $ => choice($.boolean, 'null'),
     // type annotations
-    annotation_type: () => choice(...ANNOTATION_BUILTINS),
+    annotation_type: _ => choice(...ANNOTATION_BUILTINS),
     // prop := identifier '=' value
     prop: $ => seq($.identifier, '=', $.value),
     // value := type? (string | number | keyword)
@@ -181,18 +177,18 @@ module.exports = grammar({
     // character := '\' escape | [^\"]
     _character: $ => choice($.escape, /[^"]/),
     // escape := ["\\/bfnrt] | 'u{' hex-digit{1, 6} '}'
-    escape: () =>
+    escape: _ =>
       token.immediate(/\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}/),
     // hex-digit := [0-9a-fA-F]
-    _hex_digit: () => /[0-9a-fA-F]/,
+    _hex_digit: _ => /[0-9a-fA-F]/,
 
     // // raw-string := 'r' raw-string-hash
     // raw_string: $ => seq('r', $._raw_string_hash),
     // // raw-string-hash := '#' raw-string-hash '#' | raw-string-quotes
     // _raw_string_hash: $ => choice(seq('#', $._raw_string_hash, '#'), $._raw_string_quotes),
     // // raw-string-quotes := '"' .* '"'
-    // _raw_string_quotes: () => seq('"', /.*/, '"'),
-    _raw_string: () =>
+    // _raw_string_quotes: _ => seq('"', /.*/, '"'),
+    _raw_string: _ =>
       seq(
         choice(
           // raw-string-hash := '#' raw-string-hash '#' | raw-string-quotes
@@ -220,9 +216,9 @@ module.exports = grammar({
     // integer := digit (digit | '_')*
     _integer: $ => seq($._digit, repeat(choice($._digit, '_'))),
     // digit := [0-9]
-    _digit: () => /[0-9]/,
+    _digit: _ => /[0-9]/,
     // sign := '+' | '-'
-    _sign: () => choice('+', '-'),
+    _sign: _ => choice('+', '-'),
 
     // hex := sign? '0x' hex-digit (hex-digit | '_')*
     _hex: $ => seq(optional($._sign), '0x', $._hex_digit, repeat(choice($._hex_digit, '_'))),
@@ -232,7 +228,7 @@ module.exports = grammar({
     _binary: $ => seq(optional($._sign), '0b', choice('0', '1'), repeat(choice('0', '1', '_'))),
 
     // boolean := 'true' | 'false'
-    boolean: () => choice('true', 'false'),
+    boolean: _ => choice('true', 'false'),
 
     // escline := '\\' ws* (single-line-comment | newline)
     _escline: $ => seq('\\', repeat($._ws), choice($.single_line_comment, $._newline)),
@@ -255,13 +251,13 @@ module.exports = grammar({
     // │  PS       Paragraph Separator            U+2029          │
     // ╰──────────────────────────────────────────────────────────╯
     // Note that for the purpose of new lines, CRLF is considered a single newline.
-    _newline: () => choice(/\r'/, /\n/, /\r\n/, /\u0085/, /\u000C/, /\u2028/, /\u2029/),
+    _newline: _ => choice(/\r'/, /\n/, /\r\n/, /\u0085/, /\u000C/, /\u2028/, /\u2029/),
 
     // ws := bom | unicode-space | multi-line-comment
     _ws: $ => choice($._bom, $._unicode_space, $.multi_line_comment),
 
     // bom := '\u{FEFF}'
-    _bom: () => /\u{FEFF}/,
+    _bom: _ => /\u{FEFF}/,
 
     // unicode-space := See Table (All White_Space unicode characters which are not `newline`)
     // Whitespace
@@ -288,7 +284,7 @@ module.exports = grammar({
     // │  Medium Mathematical Space U+205F  │
     // │  Ideographic Space         U+3000  │
     // ╰────────────────────────────────────╯
-    _unicode_space: () =>
+    _unicode_space: _ =>
       /[\u0009\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000]/,
 
     // single-line-comment := '//' ^newline+ (newline | eof)

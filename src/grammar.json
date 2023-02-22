@@ -59,7 +59,7 @@
     },
     "node": {
       "type": "PREC",
-      "value": 1,
+      "value": 0,
       "content": {
         "type": "SEQ",
         "members": [
