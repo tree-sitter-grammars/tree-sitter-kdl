@@ -1,4 +1,9 @@
-//! This crate provides kdl language support for the [tree-sitter][] parsing library.
+// ------------------------------------------------------------------------------------------------
+// Copyright © 2023, Amaan Qureshi <amaanq12@gmail.com>, Andrew Hlynskyi <ahlincq@gmail.com>
+// See the LICENSE file in this repo for license details.
+// ------------------------------------------------------------------------------------------------
+
+//! This crate provides KDL language support for the [tree-sitter][] parsing library.
 //!
 //! Typically, you will use the [language][language func] function to add this language to a
 //! tree-sitter [Parser][], and then use the parser to parse some code:
@@ -28,17 +33,24 @@ pub fn language() -> Language {
     unsafe { tree_sitter_kdl() }
 }
 
+/// The source of the Rust tree-sitter grammar description.
+pub const GRAMMAR: &str = include_str!("../../grammar.js");
+
+/// The syntax highlighting query for this language.
+pub const HIGHLIGHTS_QUERY: &str = include_str!("../../queries/highlights.scm");
+
+/// The injection query for this language.
+pub const INJECTIONS_QUERY: &str = include_str!("../../queries/injections.scm");
+
+/// The symbol tagging query for this language.
+pub const LOCALS_QUERY: &str = include_str!("../../queries/locals.scm");
+
+// pub const TAGS_QUERY: &'static str = include_str!("../../queries/tags.scm");
+
 /// The content of the [`node-types.json`][] file for this grammar.
 ///
 /// [`node-types.json`]: https://tree-sitter.github.io/tree-sitter/using-parsers#static-node-types
-pub const NODE_TYPES: &'static str = include_str!("../../src/node-types.json");
-
-// Uncomment these to include any queries that this grammar contains
-
-// pub const HIGHLIGHTS_QUERY: &'static str = include_str!("../../queries/highlights.scm");
-// pub const INJECTIONS_QUERY: &'static str = include_str!("../../queries/injections.scm");
-// pub const LOCALS_QUERY: &'static str = include_str!("../../queries/locals.scm");
-// pub const TAGS_QUERY: &'static str = include_str!("../../queries/tags.scm");
+pub const NODE_TYPES: &str = include_str!("../../src/node-types.json");
 
 #[cfg(test)]
 mod tests {
@@ -47,6 +59,6 @@ mod tests {
         let mut parser = tree_sitter::Parser::new();
         parser
             .set_language(super::language())
-            .expect("Error loading kdl language");
+            .expect("Error loading KDL grammar");
     }
 }
