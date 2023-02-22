@@ -1,40 +1,50 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -e
+set -eu
 
 cd "$(dirname "$0")/.."
 
-function checkout() {
-  repo=$1; url=$2; sha=$3
+function clone_repo {
+	owner=$1
+	name=$2
+	sha=$3
 
-  if [ ! -d "$repo" ]; then
-    git clone "https://github.com/$url" "$repo"
-  fi
+	path=examples/$name
+	if [ ! -d "$path" ]; then
+		echo "Cloning $owner/$name"
+		git clone "https://github.com/$owner/$name" "$path"
+	fi
 
-  pushd "$repo"
-  git fetch && git reset --hard "$sha"
-  popd
+	pushd "$path" >/dev/null
+	actual_sha=$(git rev-parse HEAD)
+	if [ "$actual_sha" != "$sha" ]; then
+		echo "Updating $owner/$name to $sha"
+		git fetch
+		git reset --hard "$sha"
+	fi
+	popd >/dev/null
 }
 
-checkout examples/kdl kdl-org/kdl 6feeccc491808fe0b5425a18aa7ab4a8ac435e55
-checkout examples/kdl-rs kdl-org/kdl-rs 8c028e5ea189470f07c5c848ab778f3d63ba89ab
-checkout examples/kdl-js kdl-org/kdljs bb874a595e6f712950795ecaad62f24fd945f03d
-checkout examples/kdl-php kdl-org/kdl-php 390fdc5ab8e2749feb01a113e8feb028de0861b3
+clone_repo kdl-org kdl 6feeccc491808fe0b5425a18aa7ab4a8ac435e55
+clone_repo kdl-org kdl-rs 8c028e5ea189470f07c5c848ab778f3d63ba89ab
+clone_repo kdl-org kdljs bb874a595e6f712950795ecaad62f24fd945f03d
+clone_repo kdl-org kdl-php 390fdc5ab8e2749feb01a113e8feb028de0861b3
 
 known_failures="$(cat script/known_failures.txt)"
 
 # Remove input directories
 find examples -type d -name input -exec rm -rf {} +
 
+# shellcheck disable=2046
 tree-sitter parse -q \
-  'examples/**/*.kdl' \
-  "$(for file in $known_failures; do echo "!${file}"; done)"
+	'examples/**/*.kdl' \
+	$(for file in $known_failures; do echo "!${file}"; done)
 
-example_count=$(find examples -name '*.kdl' | wc -l)
-failure_count=$(wc -w <<< "$known_failures")
-success_count=$(( example_count - failure_count ))
-success_percent=$(bc -l <<< "100*${success_count}/${example_count}")
+example_count=$(find examples -name "*.kdl" | wc -l)
+failure_count=$(wc -w <<<"$known_failures")
+success_count=$((example_count - failure_count))
+success_percent=$(bc -l <<<"100*${success_count}/${example_count}")
 
 printf \
-  "Successfully parsed %d of %d example files (%.1f%%)\n" \
-  $success_count "$example_count" "$success_percent"
+	"Successfully parsed %d of %d example files (%.1f%%)\n" \
+	"$success_count" "$example_count" "$success_percent"
