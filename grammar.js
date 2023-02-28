@@ -62,9 +62,9 @@ module.exports = grammar({
     [$.node_children],
   ],
 
-  extras: $ => [$.multi_line_comment],
+  externals: $ => [$._eof, $.multi_line_comment],
 
-  externals: $ => [$._eof],
+  extras: $ => [$.multi_line_comment],
 
   word: $ => $._normal_bare_identifier,
 
@@ -291,17 +291,8 @@ module.exports = grammar({
     single_line_comment: $ =>
       seq(
         '//',
-        repeat1(/[^\r\n\u0085\u000C\u2028\u2029]/),
+        repeat(/[^\r\n\u0085\u000C\u2028\u2029]/),
         choice($._newline, $._eof),
       ),
-    // multi-line-comment := '/*' commented-block
-    multi_line_comment: $ =>
-      seq('/*', repeat(prec.right(2, choice($.commented_block, /[^*\/]/))), '*/'),
-    // commented-block := '*/' | (multi-line-comment | '*' | '/' | [^*/]+) commented-block
-    commented_block: $ =>
-      prec.right(1, seq(
-        /[^*\/]/,
-        repeat(choice($.multi_line_comment, /[^*\/]/)),
-      )),
   },
 });
