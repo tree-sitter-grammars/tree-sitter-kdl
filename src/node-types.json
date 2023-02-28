@@ -10,21 +10,6 @@
     "fields": {}
   },
   {
-    "type": "commented_block",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "multi_line_comment",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "decimal",
     "named": true,
     "fields": {}
@@ -82,21 +67,6 @@
       "types": [
         {
           "type": "boolean",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "multi_line_comment",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "commented_block",
           "named": true
         }
       ]
@@ -380,10 +350,6 @@
     "named": false
   },
   {
-    "type": "*/",
-    "named": false
-  },
-  {
     "type": "+",
     "named": false
   },
@@ -393,10 +359,6 @@
   },
   {
     "type": ".",
-    "named": false
-  },
-  {
-    "type": "/*",
     "named": false
   },
   {
@@ -558,6 +520,10 @@
   {
     "type": "isize",
     "named": false
+  },
+  {
+    "type": "multi_line_comment",
+    "named": true
   },
   {
     "type": "node_children_comment",

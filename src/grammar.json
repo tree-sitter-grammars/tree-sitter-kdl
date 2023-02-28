@@ -59,7 +59,7 @@
     },
     "node": {
       "type": "PREC",
-      "value": 0,
+      "value": 1,
       "content": {
         "type": "SEQ",
         "members": [
@@ -1282,7 +1282,7 @@
           "value": "//"
         },
         {
-          "type": "REPEAT1",
+          "type": "REPEAT",
           "content": {
             "type": "PATTERN",
             "value": "[^\\r\\n\\u0085\\u000C\\u2028\\u2029]"
@@ -1302,68 +1302,6 @@
           ]
         }
       ]
-    },
-    "multi_line_comment": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "/*"
-        },
-        {
-          "type": "REPEAT",
-          "content": {
-            "type": "PREC_RIGHT",
-            "value": 2,
-            "content": {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "SYMBOL",
-                  "name": "commented_block"
-                },
-                {
-                  "type": "PATTERN",
-                  "value": "[^*\\/]"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "type": "STRING",
-          "value": "*/"
-        }
-      ]
-    },
-    "commented_block": {
-      "type": "PREC_RIGHT",
-      "value": 1,
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "PATTERN",
-            "value": "[^*\\/]"
-          },
-          {
-            "type": "REPEAT",
-            "content": {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "SYMBOL",
-                  "name": "multi_line_comment"
-                },
-                {
-                  "type": "PATTERN",
-                  "value": "[^*\\/]"
-                }
-              ]
-            }
-          }
-        ]
-      }
     }
   },
   "extras": [
@@ -1388,6 +1326,10 @@
     {
       "type": "SYMBOL",
       "name": "_eof"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "multi_line_comment"
     }
   ],
   "inline": [],
