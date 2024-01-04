@@ -61,9 +61,9 @@ node "arg"
             (string
               (string_fragment))))))
 
-=====================
-Test Raw String Quote
-=====================
+=========================
+Test Escaped String Quote
+=========================
 
 node "a\"b"
 
@@ -203,9 +203,9 @@ node "arg"
             (string
               (string_fragment))))))
 
-=========================
-Test Raw String Backslash
-=========================
+=============================
+Test Escaped String Backslash
+=============================
 
 node "\\n"
 
@@ -708,9 +708,9 @@ node "0prop"="val"
               (string
                 (string_fragment)))))))
 
-==========================
-Test Raw String Just Quote
-==========================
+==============================
+Test Escaped String Just Quote
+==============================
 
 node "\""
 
@@ -998,9 +998,9 @@ node "arg"
             (string
               (string_fragment))))))
 
-====================
-Test Raw String Prop
-====================
+========================
+Test Escaped String Prop
+========================
 
 node_1 prop="arg\\n"
 node_2 prop="\"arg\"\\n"
@@ -1163,9 +1163,9 @@ node1 {
           (node
             (identifier)))))
 
-=========================
-Test Prop Raw String Type
-=========================
+=============================
+Test Prop Escaped String Type
+=============================
 
 node key=(type)"str"
 
@@ -1274,9 +1274,9 @@ node "arg"
             (string
               (string_fragment))))))
 
-=============================
-Test Raw String Multiple Hash
-=============================
+=================================
+Test Escaped String Multiple Hash
+=================================
 
 node "\"#\"##"
 
@@ -1312,9 +1312,9 @@ node false true
             (keyword
               (boolean))))))
 
-========================
-Test Arg Raw String Type
-========================
+============================
+Test Arg Escaped String Type
+============================
 
 node (type)"str"
 
@@ -1466,9 +1466,9 @@ node "arg"
             (string
               (string_fragment))))))
 
-==============================
-Test Raw String Just Backslash
-==============================
+==================================
+Test Escaped String Just Backslash
+==================================
 
 "\\"
 
@@ -1542,9 +1542,9 @@ node 1
           (value
             (number)))))
 
-=======================
-Test Raw String Newline
-=======================
+===========================
+Test Escaped String Newline
+===========================
 
 node "\nhello\nworld\n"
 
@@ -1782,9 +1782,9 @@ node 1
           (value
             (number)))))
 
-===================
-Test Raw String Arg
-===================
+=======================
+Test Escaped String Arg
+=======================
 
 node_1 "arg\\n"
 node_2 "\"arg\\n\"and stuff"
@@ -2595,9 +2595,9 @@ false_id
       (node
         (identifier)))
 
-===========================
-Test Raw String Hash No Esc
-===========================
+===============================
+Test Escaped String Hash No Esc
+===============================
 
 node "#"
 
@@ -2781,4 +2781,59 @@ node {
           (node
             (identifier)))))
 
+=====================================
+Test Empty Raw String Arg Single Hash
+=====================================
 
+node r#""#
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string)))))
+
+=====================================
+Test Empty Raw String Arg Many Hashes
+=====================================
+
+node r####""####
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string)))))
+
+=================================================
+Test Empty Raw String Arg With Partial Terminator
+=================================================
+
+node r####""###"####
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string)))))
+
+====================================================
+Test Incomplete Raw String Opener As Node Identifier
+====================================================
+
+r####
+
+---
+
+    (document
+      (node
+        (identifier)))
