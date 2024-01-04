@@ -62,7 +62,11 @@ module.exports = grammar({
     [$.node_children],
   ],
 
-  externals: $ => [$._eof, $.multi_line_comment],
+  externals: $ => [
+    $._eof,
+    $.multi_line_comment,
+    $._raw_string,
+  ],
 
   extras: $ => [$.multi_line_comment],
 
@@ -181,23 +185,6 @@ module.exports = grammar({
       token.immediate(/\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}/),
     // hex-digit := [0-9a-fA-F]
     _hex_digit: _ => /[0-9a-fA-F]/,
-
-    // // raw-string := 'r' raw-string-hash
-    // raw_string: $ => seq('r', $._raw_string_hash),
-    // // raw-string-hash := '#' raw-string-hash '#' | raw-string-quotes
-    // _raw_string_hash: $ => choice(seq('#', $._raw_string_hash, '#'), $._raw_string_quotes),
-    // // raw-string-quotes := '"' .* '"'
-    // _raw_string_quotes: _ => seq('"', /.*/, '"'),
-    _raw_string: _ =>
-      seq(
-        choice(
-          // raw-string-hash := '#' raw-string-hash '#' | raw-string-quotes
-          // yes this isn't perfect but it works, ideally this should be handled in an external scanner
-          seq(token.immediate(seq('r', repeat1('#'))), /[^#]*/, repeat1('#')),
-          // raw-string-quotes := '"' . '"'
-          seq(token.immediate(seq('r', '"')), /[^"]*/, '"'),
-        ),
-      ),
 
     // number := decimal | hex | octal | binary
     number: $ => choice($._decimal, $._hex, $._octal, $._binary),
