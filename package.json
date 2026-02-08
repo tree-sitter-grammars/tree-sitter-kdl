@@ -2,48 +2,62 @@
   "name": "tree-sitter-kdl",
   "version": "1.1.0",
   "description": "KDL grammar for tree-sitter",
-  "main": "bindings/node",
-  "keywords": [
-    "parser",
-    "lexer",
-    "kdl"
-  ],
-  "author": "Amaan Qureshi <amaanq12@gmail.com>",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amaanq/tree-sitter-kdl.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Amaan Qureshi",
+    "email": "contact@amaanq.com"
+  },
   "contributors": [
     "Andrew Hlynskyi <ahlincq@gmail.com>"
   ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/amaanq/tree-sitter-kdl/issues"
-  },
-  "homepage": "https://github.com/amaanq/tree-sitter-kdl#readme",
+  "main": "bindings/node",
+  "types": "bindings/node",
+  "keywords": [
+    "incremental",
+    "parsing",
+    "tree-sitter",
+    "kdl"
+  ],
+  "files": [
+    "grammar.js",
+    "tree-sitter.json",
+    "binding.gyp",
+    "prebuilds/**",
+    "bindings/node/*",
+    "queries/*",
+    "src/**",
+    "*.wasm"
+  ],
   "dependencies": {
-    "nan": "^2.18.0"
+    "node-addon-api": "^8.5.0",
+    "node-gyp-build": "^4.8.4"
   },
   "devDependencies": {
-    "eslint": "^8.56.0",
-    "eslint-config-google": "^0.14.0",
-    "tree-sitter-cli": "^0.20.8",
-    "node-gyp": "^10.0.1"
+    "eslint": "^9.39.5",
+    "eslint-config-treesitter": "^1.0.2",
+    "prebuildify": "^6.0.1",
+    "tree-sitter": "^0.25.1",
+    "tree-sitter-cli": "^0.27.0"
   },
-  "repository": "https://github.com/amaanq/tree-sitter-kdl",
+  "peerDependencies": {
+    "tree-sitter": "^0.25.0"
+  },
+  "peerDependenciesMeta": {
+    "tree-sitter": {
+      "optional": true
+    }
+  },
   "scripts": {
-    "build": "tree-sitter generate && node-gyp build",
+    "install": "node-gyp-build",
     "lint": "eslint grammar.js",
     "parse": "tree-sitter parse",
-    "test": "tree-sitter test && script/parse-examples",
-    "test-windows": "tree-sitter test"
-  },
-  "tree-sitter": [
-    {
-      "scope": "source.kdl",
-      "injection-regex": "kdl",
-      "file-types": [
-        "kdl"
-      ],
-      "highlights": [
-        "queries/highlights.scm"
-      ]
-    }
-  ]
+    "prestart": "tree-sitter build --wasm",
+    "start": "tree-sitter playground",
+    "test": "tree-sitter test && script/parse-examples"
+  }
 }

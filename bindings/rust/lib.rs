@@ -1,60 +1,48 @@
-// ------------------------------------------------------------------------------------------------
-// Copyright © 2023, Amaan Qureshi <amaanq12@gmail.com>, Andrew Hlynskyi <ahlincq@gmail.com>
-// See the LICENSE file in this repo for license details.
-// ------------------------------------------------------------------------------------------------
-
-//! This crate provides KDL language support for the [tree-sitter][] parsing library.
+//! This crate provides KDL language support for the [tree-sitter] parsing library.
 //!
-//! Typically, you will use the [language][language func] function to add this language to a
-//! tree-sitter [Parser][], and then use the parser to parse some code:
+//! Typically, you will use the [`LANGUAGE`] constant to add this language to a
+//! tree-sitter [`Parser`], and then use the parser to parse some code:
 //!
 //! ```
-//! let code = "";
+//! let code = r#"
+//! "#;
 //! let mut parser = tree_sitter::Parser::new();
-//! parser.set_language(tree_sitter_kdl::language()).expect("Error loading KDL grammar");
+//! let language = tree_sitter_kdl::LANGUAGE;
+//! parser
+//!     .set_language(&language.into())
+//!     .expect("Error loading KDL parser");
 //! let tree = parser.parse(code, None).unwrap();
+//! assert!(!tree.root_node().has_error());
 //! ```
 //!
-//! [Language]: https://docs.rs/tree-sitter/*/tree_sitter/struct.Language.html
-//! [language func]: fn.language.html
-//! [Parser]: https://docs.rs/tree-sitter/*/tree_sitter/struct.Parser.html
+//! [`Parser`]: https://docs.rs/tree-sitter/0.27.0/tree_sitter/struct.Parser.html
 //! [tree-sitter]: https://tree-sitter.github.io/
 
-use tree_sitter::Language;
+use tree_sitter_language::LanguageFn;
 
-extern "C" {
-    fn tree_sitter_kdl() -> Language;
+unsafe extern "C" {
+    fn tree_sitter_kdl() -> *const ();
 }
 
-/// Get the tree-sitter [Language][] for this grammar.
+/// The tree-sitter [`LanguageFn`] for this grammar.
+pub const LANGUAGE: LanguageFn = unsafe { LanguageFn::from_raw(tree_sitter_kdl) };
+
+/// The content of the [`node-types.json`] file for this grammar.
 ///
-/// [Language]: https://docs.rs/tree-sitter/*/tree_sitter/struct.Language.html
-pub fn language() -> Language {
-    unsafe { tree_sitter_kdl() }
-}
+/// [`node-types.json`]: https://tree-sitter.github.io/tree-sitter/using-parsers/6-static-node-types
+pub const NODE_TYPES: &str = include_str!("../../src/node-types.json");
 
-/// The source of the Rust tree-sitter grammar description.
-pub const GRAMMAR: &str = include_str!("../../grammar.js");
-
-/// The folds query for this language.
-pub const FOLDS_QUERY: &str = include_str!("../../queries/folds.scm");
-
-/// The syntax highlighting query for this language.
+#[cfg(with_highlights_query)]
+/// The syntax highlighting query for this grammar.
 pub const HIGHLIGHTS_QUERY: &str = include_str!("../../queries/highlights.scm");
 
-/// The indents query for this language.
-pub const INDENTS_QUERY: &str = include_str!("../../queries/indents.scm");
-
-/// The injection query for this language.
+#[cfg(with_injections_query)]
+/// The language injection query for this grammar.
 pub const INJECTIONS_QUERY: &str = include_str!("../../queries/injections.scm");
 
-/// The symbol tagging query for this language.
+#[cfg(with_locals_query)]
+/// The local variable query for this grammar.
 pub const LOCALS_QUERY: &str = include_str!("../../queries/locals.scm");
-
-/// The content of the [`node-types.json`][] file for this grammar.
-///
-/// [`node-types.json`]: https://tree-sitter.github.io/tree-sitter/using-parsers#static-node-types
-pub const NODE_TYPES: &str = include_str!("../../src/node-types.json");
 
 #[cfg(test)]
 mod tests {
@@ -62,7 +50,7 @@ mod tests {
     fn test_can_load_grammar() {
         let mut parser = tree_sitter::Parser::new();
         parser
-            .set_language(super::language())
-            .expect("Error loading KDL grammar");
+            .set_language(&super::LANGUAGE.into())
+            .expect("Error loading KDL parser");
     }
 }

@@ -1,6 +1,6 @@
 /**
  * @file KDL grammar for tree-sitter
- * @author Amaan Qureshi <amaanq12@gmail.com>
+ * @author Amaan Qureshi <contact@amaanq.com>
  * @license MIT
  * @see {@link https://kdl.dev|official website}
  * @see {@link https://github.com/kdl-org/kdl/blob/main/SPEC.md|official syntax spec}
@@ -53,7 +53,7 @@ const ANNOTATION_BUILTINS = [
   'base64',
 ];
 
-module.exports = grammar({
+export default grammar({
   name: 'kdl',
 
   conflicts: $ => [

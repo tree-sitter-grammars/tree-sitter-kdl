@@ -6,15 +6,26 @@ enum { _EOF, MULTI_LINE_COMMENT, _RAW_STRING };
 
 void *tree_sitter_kdl_external_scanner_create() { return NULL; }
 
-void tree_sitter_kdl_external_scanner_destroy(void *payload) {}
+void tree_sitter_kdl_external_scanner_destroy(void *payload) { (void)payload; }
 
-unsigned tree_sitter_kdl_external_scanner_serialize(void *payload, char *buffer) { return 0; }
+unsigned tree_sitter_kdl_external_scanner_serialize(void *payload, char *buffer) {
+    (void)payload;
+    (void)buffer;
+    return 0;
+}
 
-void tree_sitter_kdl_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {}
+void tree_sitter_kdl_external_scanner_deserialize(void *payload, const char *buffer,
+                                                  unsigned length) {
+    (void)payload;
+    (void)buffer;
+    (void)length;
+}
 
 static void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
 
-bool tree_sitter_kdl_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
+bool tree_sitter_kdl_external_scanner_scan(void *payload, TSLexer *lexer,
+                                           const bool *valid_symbols) {
+    (void)payload;
     // check for End-of-file
     if (valid_symbols[_EOF] && lexer->lookahead == 0) {
         lexer->result_symbol = _EOF;

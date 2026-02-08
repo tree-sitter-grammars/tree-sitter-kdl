@@ -1,6 +1,50 @@
-Cargo.lock
-package-lock.json
-/build
-/node_modules
+# Rust artifacts
+target/
+
+# Node artifacts
+build/
+prebuilds/
+node_modules/
+
+# Swift artifacts
+.build/
+
+# Go artifacts
+_obj/
+
+# Python artifacts
+.venv/
+__pycache__/
+dist/
+*.py[cod]
+*.egg-info
+*.whl
+
+# C artifacts
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.pc
+*.exp
+*.lib
+
+# Zig artifacts
+.zig-cache/
+zig-cache/
+zig-out/
+
+# Example dirs
 /examples/*/
-/target
+
+# Grammar volatiles
+*.wasm
+*.obj
+*.o
+
+# Archives
+*.tar.gz
+*.tgz
+*.zip
+*.jar
