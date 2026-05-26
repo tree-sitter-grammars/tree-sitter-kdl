@@ -1,0 +1,189 @@
+// KDL grammar for tree-sitter (native DSL).
+// Translated from grammar.js.
+
+let ANNOTATION_BUILTINS: list_t<str_t> = [
+    "i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "isize", "usize",
+    "f32", "f64", "decimal64", "decimal128",
+    "date-time", "time", "date", "duration", "decimal", "currency",
+    "country-2", "country-3", "country-subdivision",
+    "email", "idn-email", "hostname", "idn-hostname",
+    "ipv4", "ipv6", "url", "url-reference", "irl", "iri-reference",
+    "url-template", "uuid", "regex", "base64",
+]
+
+grammar {
+    language: "kdl",
+    conflicts: [[document], [_node_space], [node_children]],
+    externals: [_eof, multi_line_comment, _raw_string],
+    extras: [multi_line_comment],
+    word: _normal_bare_identifier,
+}
+
+rule document {
+    seq(
+        repeat(_linespace),
+        optional(seq(node, repeat(seq(repeat(_linespace), node)))),
+        repeat(_linespace),
+    )
+}
+
+rule node {
+    prec(1, seq(
+        alias(optional(seq("/-", repeat(_node_space))), node_comment),
+        optional(type),
+        identifier,
+        repeat(seq(repeat1(_node_space), node_field)),
+        optional(seq(repeat(_node_space), field(children, node_children), repeat(_ws))),
+        repeat(_node_space),
+        _node_terminator,
+    ))
+}
+
+rule node_field { choice(_node_field_comment, _node_field) }
+
+rule _node_field_comment {
+    alias(seq("/-", repeat(_node_space), _node_field), node_field_comment)
+}
+
+rule _node_field { choice(prop, value) }
+
+rule node_children {
+    seq(
+        optional(seq(alias("/-", node_children_comment), repeat(_node_space))),
+        "{",
+        seq(
+            repeat(_linespace),
+            optional(seq(node, repeat(seq(repeat(_linespace), node)))),
+            repeat(_linespace),
+        ),
+        "}",
+    )
+}
+
+rule _node_space {
+    choice(
+        seq(repeat(_ws), _escline, repeat(_ws)),
+        repeat1(_ws),
+    )
+}
+
+rule _node_terminator { choice(single_line_comment, _newline, ";", _eof) }
+
+rule identifier { choice(string, _bare_identifier) }
+
+rule _bare_identifier {
+    choice(
+        _normal_bare_identifier,
+        seq(_sign, optional(seq(__identifier_char_no_digit, repeat(_identifier_char)))),
+    )
+}
+
+rule _normal_bare_identifier {
+    token(seq(
+        regexp(r#"[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}_~!@#\$%\^&\*.:'\|\?&&[^\s\d\/(){}<>;\[\]=,"]]"#),
+        regexp(r#"[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]*"#),
+    ))
+}
+
+rule _identifier_char {
+    token(regexp(r#"[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]"#))
+}
+
+rule __identifier_char_no_digit {
+    token(regexp(r#"[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]"#))
+}
+
+rule __identifier_char_no_digit_sign {
+    token(regexp(r#"[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?&&[^\s\d\+\-\/(){}<>;\[\]=,"]]"#))
+}
+
+rule keyword { choice(boolean, "null") }
+
+rule annotation_type {
+    choice(for (a: str_t) in ANNOTATION_BUILTINS { a })
+}
+
+rule prop { seq(identifier, "=", value) }
+
+rule value { seq(optional(type), choice(string, number, keyword)) }
+
+rule type { seq("(", choice(identifier, annotation_type), ")") }
+
+rule string { choice(_raw_string, _escaped_string) }
+
+rule _escaped_string {
+    seq("\"", alias(repeat(choice(escape, regexp(r#"[^"]"#))), string_fragment), "\"")
+}
+
+rule _character { choice(escape, regexp(r#"[^"]"#)) }
+
+rule escape {
+    token_immediate(regexp(r#"\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}"#))
+}
+
+rule _hex_digit { regexp(r"[0-9a-fA-F]") }
+
+rule number { choice(_decimal, _hex, _octal, _binary) }
+
+rule _decimal {
+    seq(
+        optional(_sign),
+        _integer,
+        optional(seq(".", alias(_integer, decimal))),
+        optional(alias(_exponent, exponent)),
+    )
+}
+
+rule _exponent { seq(choice("e", "E"), optional(_sign), _integer) }
+
+rule _integer { seq(_digit, repeat(choice(_digit, "_"))) }
+
+rule _digit { regexp(r"[0-9]") }
+
+rule _sign { choice("+", "-") }
+
+rule _hex { seq(optional(_sign), "0x", _hex_digit, repeat(choice(_hex_digit, "_"))) }
+
+rule _octal {
+    seq(optional(_sign), "0o", regexp(r"[0-7]"), repeat(choice(regexp(r"[0-7]"), "_")))
+}
+
+rule _binary {
+    seq(optional(_sign), "0b", choice("0", "1"), repeat(choice("0", "1", "_")))
+}
+
+rule boolean { choice("true", "false") }
+
+rule _escline {
+    seq("\\", repeat(_ws), choice(single_line_comment, _newline))
+}
+
+rule _linespace { choice(_newline, _ws, single_line_comment) }
+
+rule _newline {
+    choice(
+        regexp(r"\r'"),
+        regexp(r"\n"),
+        regexp(r"\r\n"),
+        regexp(r"\u0085"),
+        regexp(r"\u000C"),
+        regexp(r"\u2028"),
+        regexp(r"\u2029"),
+    )
+}
+
+rule _ws { choice(_bom, _unicode_space, multi_line_comment) }
+
+rule _bom { regexp(r"\u{FEFF}") }
+
+rule _unicode_space {
+    regexp(r"[	 \u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000]")
+}
+
+rule single_line_comment {
+    seq(
+        "//",
+        repeat(regexp(r"[^\r\n\u0085\u000C\u2028\u2029]")),
+        choice(_newline, _eof),
+    )
+}
