@@ -28,7 +28,11 @@
 
 (multi_line_string) @string
 
+(string_fragment) @string
+
 (escape) @string.escape
+
+(escaped_whitespace) @string.escape
 
 (number) @number
 

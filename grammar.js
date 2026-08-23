@@ -58,6 +58,12 @@ const BOOLEAN_KEYWORDS = ['true', 'false', '#true', '#false'];
 const NULL_KEYWORDS = ['null', '#null'];
 const KEYWORD_NUMBERS = ['#inf', '#-inf', '#nan'];
 
+/**
+ * Build a KDL document from optional newline- and comment-separated nodes.
+ *
+ * @param {GrammarSymbols<'kdl'>} $
+ * @return {RuleOrLiteral}
+ */
 function linespacedNodes($) {
   return seq(
     repeat($._linespace),
@@ -85,7 +91,12 @@ module.exports = grammar({
   externals: $ => [
     $._eof,
     $.multi_line_comment,
-    $.multi_line_string,
+    $._multiline_escaped_start,
+    $._multiline_raw_start,
+    $._multiline_escape,
+    $._multiline_escaped_whitespace,
+    $._multiline_fragment,
+    $._multiline_end,
     $._raw_string,
   ],
 
@@ -190,7 +201,10 @@ module.exports = grammar({
     prop: $ => seq($.identifier, repeat($._node_space), '=', repeat($._node_space), $.value),
 
     // value := type? (string | number | keyword)
-    value: $ => seq(optional(seq($.type, repeat($._node_space))), choice($.string, $.number, $.keyword)),
+    value: $ => seq(
+      optional(seq($.type, repeat($._node_space))),
+      choice($.string, alias($._bare_identifier, $.string), $.number, $.keyword),
+    ),
 
     // type := '(' identifier ')'
     type: $ => seq('(', repeat($._node_space), choice($.identifier, $.annotation_type), repeat($._node_space), ')'),
@@ -202,6 +216,22 @@ module.exports = grammar({
     // - v2 multiline strings: """..."""
     // The tricky delimiter matching lives in the external scanner.
     string: $ => choice($._raw_string, $.multi_line_string, $._escaped_string),
+    multi_line_string: $ => choice(
+      seq(
+        $._multiline_escaped_start,
+        repeat(choice(
+          alias($._multiline_fragment, $.string_fragment),
+          alias($._multiline_escape, $.escape),
+          alias($._multiline_escaped_whitespace, $.escaped_whitespace),
+        )),
+        $._multiline_end,
+      ),
+      seq(
+        $._multiline_raw_start,
+        repeat(alias($._multiline_fragment, $.string_fragment)),
+        $._multiline_end,
+      ),
+    ),
     // escaped-string := '"' character* '"'
     _escaped_string: $ => seq('"', alias(repeat(choice($.escape, $.escaped_whitespace, /[^"]/)), $.string_fragment), '"'),
     // character := '\' escape | [^\"]
@@ -209,7 +239,9 @@ module.exports = grammar({
     // escape := ["\\/bfnrts] | 'u{' hex-digit{1, 6} '}'
     escape: _ =>
       token.immediate(/\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\s|\\u\{[0-9a-fA-F]{1,6}\}/),
-    escaped_whitespace: _ => token.immediate(/\\(?:\r\n|[\u0009\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\r\n\u0085\u000B\u000C\u2028\u2029])+/),
+    escaped_whitespace: _ => token.immediate(
+      /\\(?:\r\n|[\u0009\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\r\n\u0085\u000B\u000C\u2028\u2029])+/,
+    ),
     // hex-digit := [0-9a-fA-F]
     _hex_digit: _ => /[0-9a-fA-F]/,
 

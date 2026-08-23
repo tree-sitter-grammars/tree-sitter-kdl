@@ -1,18 +1,58 @@
 #include "tree_sitter/parser.h"
 
-enum { _EOF, MULTI_LINE_COMMENT, MULTI_LINE_STRING, _RAW_STRING };
+#include <stdlib.h>
 
-void *tree_sitter_kdl_external_scanner_create() { return NULL; }
+enum {
+    _EOF,
+    MULTI_LINE_COMMENT,
+    MULTILINE_ESCAPED_START,
+    MULTILINE_RAW_START,
+    MULTILINE_ESCAPE,
+    MULTILINE_ESCAPED_WHITESPACE,
+    MULTILINE_FRAGMENT,
+    MULTILINE_END,
+    _RAW_STRING,
+};
 
-void tree_sitter_kdl_external_scanner_destroy(void *payload) {}
+typedef struct {
+    bool active;
+    bool raw;
+    bool at_line_start;
+    uint32_t hash_count;
+} Scanner;
 
-unsigned tree_sitter_kdl_external_scanner_serialize(void *payload, char *buffer) { return 0; }
+void *tree_sitter_kdl_external_scanner_create() { return calloc(1, sizeof(Scanner)); }
 
-void tree_sitter_kdl_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {}
+void tree_sitter_kdl_external_scanner_destroy(void *payload) { free(payload); }
+
+unsigned tree_sitter_kdl_external_scanner_serialize(void *payload, char *buffer) {
+    Scanner *scanner = payload;
+    buffer[0] = scanner->active;
+    buffer[1] = scanner->raw;
+    buffer[2] = scanner->at_line_start;
+    buffer[3] = (char)(scanner->hash_count & 0xff);
+    buffer[4] = (char)((scanner->hash_count >> 8) & 0xff);
+    buffer[5] = (char)((scanner->hash_count >> 16) & 0xff);
+    buffer[6] = (char)((scanner->hash_count >> 24) & 0xff);
+    return 7;
+}
+
+void tree_sitter_kdl_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
+    Scanner *scanner = payload;
+    *scanner = (Scanner){0};
+    if (length != 7) return;
+
+    scanner->active = buffer[0];
+    scanner->raw = buffer[1];
+    scanner->at_line_start = buffer[2];
+    scanner->hash_count = (uint32_t)(unsigned char)buffer[3] |
+                          ((uint32_t)(unsigned char)buffer[4] << 8) |
+                          ((uint32_t)(unsigned char)buffer[5] << 16) |
+                          ((uint32_t)(unsigned char)buffer[6] << 24);
+}
 
 static void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
 
-static bool scan_multiline_body(TSLexer *lexer, unsigned num_hashes);
 
 // According to the KDL v2 spec: https://kdl.dev/spec/#name-whitespace
 static bool is_unicode_space(int32_t c) {
@@ -92,79 +132,144 @@ static bool consume_triple_quote(TSLexer *lexer) {
 }
 
 
-// After reading the first quote of a v2 raw string opener, check if the
-// following input makes it a raw multiline string (`#"""\n` / `##"""\n`).
-// If it does, consume the opening newline and start scanning the multiline body.
-static bool try_scan_v2_raw_multiline_string(TSLexer *lexer, unsigned num_hashes, unsigned *consumed_quotes) {
-    if (lexer->lookahead != '"') {
-        return false;
-    }
-    advance(lexer);
-    *consumed_quotes = 1;
-
-    if (lexer->lookahead != '"') {
-        return false;
-    }
-    advance(lexer);
-    *consumed_quotes = 2;
-
-    if (!is_newline_start(lexer->lookahead)) {
-        return false;
+static bool scan_multiline_start(Scanner *scanner, TSLexer *lexer, bool raw) {
+    uint32_t hash_count = 0;
+    if (raw) {
+        while (lexer->lookahead == '#') {
+            hash_count++;
+            advance(lexer);
+        }
+        if (hash_count == 0) return false;
     }
 
+    if (!consume_triple_quote(lexer) || !is_newline_start(lexer->lookahead)) return false;
     advance_newline(lexer);
-    if (!scan_multiline_body(lexer, num_hashes)) {
-        return false;
-    }
 
-    lexer->result_symbol = _RAW_STRING;
+    scanner->active = true;
+    scanner->raw = raw;
+    scanner->at_line_start = true;
+    scanner->hash_count = hash_count;
+    lexer->result_symbol = raw ? MULTILINE_RAW_START : MULTILINE_ESCAPED_START;
     return true;
 }
 
-static bool scan_multiline_body(TSLexer *lexer, unsigned num_hashes) {
-    bool at_line_start = true;
+static bool scan_multiline_content(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
+    if (!scanner->active) return false;
+
+    bool has_content = false;
+    bool at_line_start = scanner->at_line_start;
+    bool marked_at_line_start = at_line_start;
+    bool pending_newline = false;
+    lexer->mark_end(lexer);
 
     for (;;) {
-        if (lexer->eof(lexer)) {
-            return false;
-        }
+        if (lexer->eof(lexer)) return false;
 
         if (at_line_start) {
-            // In KDL v2, a multiline string closes near the start of a line:
-            // indentation is allowed, then the closing """ or """### delimiter.
+            bool has_indentation = false;
             while (is_unicode_space(lexer->lookahead)) {
+                has_indentation = true;
                 advance(lexer);
             }
 
-            if (consume_triple_quote(lexer)) {
-                return consume_closing_hashes(lexer, num_hashes);
+            bool starts_quote = lexer->lookahead == '"';
+            if (starts_quote && consume_triple_quote(lexer) &&
+                consume_closing_hashes(lexer, scanner->hash_count)) {
+                if (has_content) {
+                    if (!valid_symbols[MULTILINE_FRAGMENT]) return false;
+                    scanner->at_line_start = marked_at_line_start;
+                    lexer->result_symbol = MULTILINE_FRAGMENT;
+                } else {
+                    if (!valid_symbols[MULTILINE_END]) return false;
+                    *scanner = (Scanner){0};
+                    lexer->result_symbol = MULTILINE_END;
+                    lexer->mark_end(lexer);
+                }
+                return true;
             }
+
+            // The spaces and any unsuccessfully probed quotes are ordinary body text.
+            lexer->mark_end(lexer);
+            has_content = has_content || pending_newline || has_indentation || starts_quote;
+            at_line_start = false;
+            marked_at_line_start = false;
+            pending_newline = false;
+            continue;
+        }
+
+        if (!scanner->raw && lexer->lookahead == '\\') {
+            if (has_content) {
+                if (!valid_symbols[MULTILINE_FRAGMENT]) return false;
+                scanner->at_line_start = marked_at_line_start;
+                lexer->result_symbol = MULTILINE_FRAGMENT;
+            }
+            return has_content;
         }
 
         if (is_newline_start(lexer->lookahead)) {
             advance_newline(lexer);
             at_line_start = true;
+            pending_newline = true;
             continue;
         }
 
-        at_line_start = false;
         advance(lexer);
+        lexer->mark_end(lexer);
+        has_content = true;
+        marked_at_line_start = false;
+        pending_newline = false;
     }
 }
 
-static bool scan_multiline_string(TSLexer *lexer, unsigned num_hashes, int result_symbol) {
-    if (!consume_triple_quote(lexer)) return false;
+static bool is_hex_digit(int32_t c) {
+    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
 
-    if (!is_newline_start(lexer->lookahead)) {
+static bool scan_multiline_escape(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
+    if (!scanner->active || scanner->raw || lexer->lookahead != '\\') return false;
+
+    advance(lexer);
+    if (is_unicode_space(lexer->lookahead) || is_newline_start(lexer->lookahead)) {
+        if (!valid_symbols[MULTILINE_ESCAPED_WHITESPACE]) return false;
+
+        bool consumed_newline = false;
+        do {
+            if (is_newline_start(lexer->lookahead)) {
+                consumed_newline = true;
+                advance_newline(lexer);
+            } else {
+                advance(lexer);
+            }
+        } while (is_unicode_space(lexer->lookahead) || is_newline_start(lexer->lookahead));
+
+        scanner->at_line_start = consumed_newline;
+        lexer->result_symbol = MULTILINE_ESCAPED_WHITESPACE;
+        return true;
+    }
+
+    if (!valid_symbols[MULTILINE_ESCAPE]) return false;
+    if (lexer->lookahead == 'u') {
+        advance(lexer);
+        if (lexer->lookahead != '{') return false;
+        advance(lexer);
+
+        unsigned digits = 0;
+        while (is_hex_digit(lexer->lookahead) && digits < 6) {
+            advance(lexer);
+            digits++;
+        }
+        if (digits == 0 || lexer->lookahead != '}') return false;
+        advance(lexer);
+    } else if (lexer->lookahead == '\\' || lexer->lookahead == '"' || lexer->lookahead == '/' ||
+               lexer->lookahead == 'b' || lexer->lookahead == 'f' || lexer->lookahead == 'n' ||
+               lexer->lookahead == 'r' || lexer->lookahead == 't' || lexer->lookahead == 's') {
+        advance(lexer);
+    } else {
         return false;
     }
 
-    advance_newline(lexer);
-    if (!scan_multiline_body(lexer, num_hashes)) {
-        return false;
-    }
-
-    lexer->result_symbol = result_symbol;
+    scanner->at_line_start = false;
+    lexer->result_symbol = MULTILINE_ESCAPE;
     return true;
 }
 
@@ -189,7 +294,7 @@ static bool scan_single_line_raw_string(TSLexer *lexer, unsigned num_hashes) {
     }
 }
 
-static bool scan_v2_raw_string(TSLexer *lexer) {
+static bool scan_v2_raw_string(Scanner *scanner, TSLexer *lexer, bool allow_multiline_start) {
     unsigned num_hashes = 0;
     while (lexer->lookahead == '#') {
         num_hashes += 1;
@@ -203,19 +308,27 @@ static bool scan_v2_raw_string(TSLexer *lexer) {
     advance(lexer);
 
     unsigned consumed_quotes = 0;
-
-    if (try_scan_v2_raw_multiline_string(lexer, num_hashes, &consumed_quotes)) {
-        return true;
+    if (lexer->lookahead == '"') {
+        advance(lexer);
+        consumed_quotes = 1;
+        if (lexer->lookahead == '"') {
+            advance(lexer);
+            consumed_quotes = 2;
+            if (allow_multiline_start && is_newline_start(lexer->lookahead)) {
+                advance_newline(lexer);
+                scanner->active = true;
+                scanner->raw = true;
+                scanner->at_line_start = true;
+                scanner->hash_count = num_hashes;
+                lexer->result_symbol = MULTILINE_RAW_START;
+                return true;
+            }
+        }
     }
 
-    if (consumed_quotes > 0) {
-        // This handles the shortest legal forms such as #""#.
-        // We already consumed the first opening quote, so here we check whether
-        // the next one or two quotes were actually the empty-string closing delimiter.
-        if (consume_closing_hashes(lexer, num_hashes)) {
-            lexer->result_symbol = _RAW_STRING;
-            return true;
-        }
+    if (consumed_quotes > 0 && consume_closing_hashes(lexer, num_hashes)) {
+        lexer->result_symbol = _RAW_STRING;
+        return true;
     }
 
     return scan_single_line_raw_string(lexer, num_hashes);
@@ -242,27 +355,33 @@ static bool scan_v1_raw_string(TSLexer *lexer) {
 }
 
 bool tree_sitter_kdl_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
+    Scanner *scanner = payload;
     if (valid_symbols[_EOF] && lexer->lookahead == 0) {
         lexer->result_symbol = _EOF;
         advance(lexer);
         return true;
     }
 
-    if (valid_symbols[MULTI_LINE_STRING] && lexer->lookahead == '"') {
-        if (scan_multiline_string(lexer, 0, MULTI_LINE_STRING)) {
-            return true;
+    if (scanner->active) {
+        if (!scanner->raw && lexer->lookahead == '\\') {
+            return scan_multiline_escape(scanner, lexer, valid_symbols);
         }
+        return scan_multiline_content(scanner, lexer, valid_symbols);
+    }
+
+    if (valid_symbols[MULTILINE_ESCAPED_START] && lexer->lookahead == '"') {
+        return scan_multiline_start(scanner, lexer, false);
     }
 
     if (valid_symbols[_RAW_STRING]) {
         // Support both raw-string families at once:
         //   v1: r#"..."#
         //   v2: #"..."#
-        if (lexer->lookahead == 'r' && scan_v1_raw_string(lexer)) {
-            return true;
+        if (lexer->lookahead == 'r') {
+            return scan_v1_raw_string(lexer);
         }
-        if (lexer->lookahead == '#' && scan_v2_raw_string(lexer)) {
-            return true;
+        if (lexer->lookahead == '#') {
+            return scan_v2_raw_string(scanner, lexer, valid_symbols[MULTILINE_RAW_START]);
         }
     }
 

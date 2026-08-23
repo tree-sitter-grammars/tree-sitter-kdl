@@ -13,6 +13,35 @@ node ""
           (value
             (string)))))
 
+================================================
+Test Empty String Before Block Comment Probe Rollback
+================================================
+
+node ""/* comment */
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string)))
+        (multi_line_comment)))
+
+===============================================
+Test Bare R Before Block Comment Probe Rollback
+===============================================
+
+r/* comment */
+
+---
+
+    (document
+      (node
+        (identifier)
+        (multi_line_comment)))
+
 ================
 Test Single Prop
 ================
@@ -107,6 +136,42 @@ node1
       (node
         (identifier)))
 
+===============================================
+Test V1 Raw String Extra Closing Hash Cut Point
+===============================================
+
+node r##"value"###garbage"##
+
+---
+
+    (document
+      (node
+        (identifier)
+        (ERROR
+          (identifier
+            (string)))
+        (node_field
+          (value
+            (string)))))
+
+===============================================
+Test V2 Raw String Extra Closing Hash Cut Point
+===============================================
+
+node ##"value"###garbage"##
+
+---
+
+    (document
+      (node
+        (identifier)
+        (ERROR
+          (identifier
+            (string)))
+        (node_field
+          (value
+            (string)))))
+
 ========================
 Test V2 Boolean And Null
 ========================
@@ -189,7 +254,134 @@ world
         (node_field
           (value
             (string
+              (multi_line_string
+                (string_fragment)))))))
+
+=========================================================
+Test V2 Multiline String Exposes Fragments And Escapes
+=========================================================
+
+node """
+before\nafter
+"""
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string
+              (multi_line_string
+                (string_fragment)
+                (escape)
+                (string_fragment)))))))
+
+=====================================================================
+Test V2 Multiline String Exposes Escaped Whitespace Between Fragments
+=====================================================================
+
+node """
+before\
+  after
+"""
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string
+              (multi_line_string
+                (string_fragment)
+                (escaped_whitespace)
+                (string_fragment)))))))
+
+=======================================================
+Test V2 Empty Escaped Multiline String
+=======================================================
+
+node """
+"""
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string
               (multi_line_string))))))
+
+=================================================================
+Test V2 Multiline Escape Immediately Before Closing Line
+=================================================================
+
+node """
+before\n
+"""
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string
+              (multi_line_string
+                (string_fragment)
+                (escape)))))))
+
+====================================================
+Test V2 Multiline Consecutive Blank Lines
+====================================================
+
+node """
+first
+
+
+second
+"""
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string
+              (multi_line_string
+                (string_fragment)))))))
+
+========================================================
+Test V2 Multiline Consecutive Line Leading Escapes
+========================================================
+
+node """
+first\n
+\tsecond
+"""
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string
+              (multi_line_string
+                (string_fragment)
+                (escape)
+                (string_fragment)
+                (escape)
+                (string_fragment)))))))
 
 ==================================
 Test V2 Raw Multiline String Arg
@@ -205,6 +397,47 @@ world
     (document
       (node
         (identifier)
+        (node_field
+          (value
+            (string
+              (multi_line_string
+                (string_fragment)))))))
+
+===============================================
+Test V2 Empty Raw Multiline String
+===============================================
+
+node #"""
+"""#
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string
+              (multi_line_string))))))
+
+====================================================
+Test V2 Raw Multiline Extra Closing Hash Cut Point
+====================================================
+
+node ##"""
+value
+"""###garbage
+
+---
+
+    (document
+      (node
+        (identifier)
+        (ERROR
+          (identifier
+            (string
+              (multi_line_string
+                (string_fragment)))))
         (node_field
           (value
             (string)))))
@@ -228,6 +461,51 @@ Test V2 Type Spacing
             (value
               (keyword
                 (boolean)))))))
+
+============================================
+Test Bare Identifier Arguments And Properties
+============================================
+
+optional example_project-docs desc="for user manual"
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string)))
+        (node_field
+          (prop
+            (identifier)
+            (value
+              (string
+                (string_fragment)))))))
+
+=======================================================
+Test Multiple Bare Identifier Arguments Before Property
+=======================================================
+
+optional first second desc = "for user manual"
+
+---
+
+    (document
+      (node
+        (identifier)
+        (node_field
+          (value
+            (string)))
+        (node_field
+          (value
+            (string)))
+        (node_field
+          (prop
+            (identifier)
+            (value
+              (string
+                (string_fragment)))))))
 
 ===================================
 Test Mixed V1 And V2 Literal Forms
@@ -496,7 +774,9 @@ world
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (multi_line_string
+                (string_fragment)))))))
 
 ========================================
 Test V2 Raw Multiline String With Quotes
@@ -513,7 +793,9 @@ hello "" world
         (identifier)
         (node_field
           (value
-            (string)))))
+            (string
+              (multi_line_string
+                (string_fragment)))))))
 
 =====================================
 Test Slashdash Arg Before Newline Esc

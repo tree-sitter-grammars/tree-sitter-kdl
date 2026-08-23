@@ -78,6 +78,29 @@
     "fields": {}
   },
   {
+    "type": "multi_line_string",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "escape",
+          "named": true
+        },
+        {
+          "type": "escaped_whitespace",
+          "named": true
+        },
+        {
+          "type": "string_fragment",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "node",
     "named": true,
     "fields": {
@@ -588,10 +611,6 @@
   },
   {
     "type": "multi_line_comment",
-    "named": true
-  },
-  {
-    "type": "multi_line_string",
     "named": true
   },
   {
