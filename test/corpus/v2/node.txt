@@ -1,0 +1,744 @@
+===============================================
+Test V2 Raw String Extra Closing Hash Cut Point
+===============================================
+
+node ##"value"###garbage"##
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (string_fragment))))
+    (ERROR)))
+
+========================
+Test V2 Boolean And Null
+========================
+
+node #true #false #null
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (keyword
+          (boolean))))
+    (node_field
+      (value
+        (keyword
+          (boolean))))
+    (node_field
+      (value
+        (keyword)))))
+
+========================
+Test V2 Keyword Numbers
+========================
+
+node #inf #-inf #nan
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (number
+          (keyword_number))))
+    (node_field
+      (value
+        (number
+          (keyword_number))))
+    (node_field
+      (value
+        (number
+          (keyword_number))))))
+
+========================
+Test V2 Raw String Arg
+========================
+
+node #""# ##"value"##
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string)))
+    (node_field
+      (value
+        (string
+          (string_fragment))))))
+
+==============================
+Test V2 Multiline String Arg
+==============================
+
+node """
+hello
+world
+"""
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (multi_line_string
+            (string_fragment)))))))
+
+========================================
+Test Multiple Slashdash Children Blocks
+========================================
+
+node foo /-{
+  one
+} \
+/-{
+  two
+} {
+  three
+} /-{
+  four
+}
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string)))
+    (node_children_comment
+      (node_children
+        (node
+          (identifier))))
+    (node_children_comment
+      (node_children
+        (node
+          (identifier))))
+    (node_children
+      (node
+        (identifier)))
+    (node_children_comment
+      (node_children
+        (node
+          (identifier))))))
+
+=========================================================
+Test V2 Multiline String Exposes Fragments And Escapes
+=========================================================
+
+node """
+before\nafter
+"""
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (multi_line_string
+            (string_fragment)
+            (escape)
+            (string_fragment)))))))
+
+=====================================================================
+Test V2 Multiline String Exposes Escaped Whitespace Between Fragments
+=====================================================================
+
+node """
+before\
+  after
+"""
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (multi_line_string
+            (string_fragment)
+            (escaped_whitespace)
+            (string_fragment)))))))
+
+=======================================================
+Test V2 Empty Escaped Multiline String
+=======================================================
+
+node """
+"""
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (multi_line_string))))))
+
+=================================================================
+Test V2 Multiline Escape Immediately Before Closing Line
+=================================================================
+
+node """
+before\n
+"""
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (multi_line_string
+            (string_fragment)
+            (escape)
+            (string_fragment)))))))
+
+====================================================
+Test V2 Multiline Consecutive Blank Lines
+====================================================
+
+node """
+first
+
+
+second
+"""
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (multi_line_string
+            (string_fragment)))))))
+
+========================================================
+Test V2 Multiline Consecutive Line Leading Escapes
+========================================================
+
+node """
+first\n
+\tsecond
+"""
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (multi_line_string
+            (string_fragment)
+            (escape)
+            (string_fragment)
+            (escape)
+            (string_fragment)))))))
+
+==================================
+Test V2 Raw Multiline String Arg
+==================================
+
+node #"""
+hello
+world
+"""#
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (string_fragment))))))
+
+===============================================
+Test V2 Empty Raw Multiline String
+===============================================
+
+node #"""
+"""#
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string)))))
+
+====================================================
+Test V2 Raw Multiline Extra Closing Hash Cut Point
+====================================================
+
+node ##"""
+value
+"""###garbage
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (string_fragment))))
+    (ERROR)))
+
+========================
+Test V2 Type Spacing
+========================
+
+( type ) node key = #true
+
+---
+
+(document
+  (node
+    (type
+      (identifier))
+    (identifier)
+    (node_field
+      (prop
+        (identifier)
+        (value
+          (keyword
+            (boolean)))))))
+
+============================================
+Test Bare Identifier Arguments And Properties
+============================================
+
+optional example_project-docs desc="for user manual"
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string)))
+    (node_field
+      (prop
+        (identifier)
+        (value
+          (string
+            (string_fragment)))))))
+
+=======================================================
+Test Multiple Bare Identifier Arguments Before Property
+=======================================================
+
+optional first second desc = "for user manual"
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string)))
+    (node_field
+      (value
+        (string)))
+    (node_field
+      (prop
+        (identifier)
+        (value
+          (string
+            (string_fragment)))))))
+
+===================================
+Test Mixed V1 And V2 Literal Forms
+===================================
+
+node true #true null #null #inf
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (keyword
+          (boolean))))
+    (node_field
+      (value
+        (keyword
+          (boolean))))
+    (node_field
+      (value
+        (keyword)))
+    (node_field
+      (value
+        (keyword)))
+    (node_field
+      (value
+        (number
+          (keyword_number))))))
+
+=========================================
+Test Mixed V1 And V2 Literal Forms Full
+=========================================
+
+node true #true false #false null #null #inf
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (keyword
+          (boolean))))
+    (node_field
+      (value
+        (keyword
+          (boolean))))
+    (node_field
+      (value
+        (keyword
+          (boolean))))
+    (node_field
+      (value
+        (keyword
+          (boolean))))
+    (node_field
+      (value
+        (keyword)))
+    (node_field
+      (value
+        (keyword)))
+    (node_field
+      (value
+        (number
+          (keyword_number))))))
+
+===================================
+Test Quoted Node And Property Names
+===================================
+
+"node name" "arg value" "prop name"="prop value"
+
+---
+
+(document
+  (node
+    (identifier
+      (string
+        (string_fragment)))
+    (node_field
+      (value
+        (string
+          (string_fragment))))
+    (node_field
+      (prop
+        (identifier
+          (string
+            (string_fragment)))
+        (value
+          (string
+            (string_fragment)))))))
+
+=========================
+Test Raw Quoted Node Names
+=========================
+
+#"node"# #"arg"# #"prop"#=#"value"#
+
+---
+
+(document
+  (node
+    (identifier
+      (string
+        (string_fragment)))
+    (node_field
+      (value
+        (string
+          (string_fragment))))
+    (node_field
+      (prop
+        (identifier
+          (string
+            (string_fragment)))
+        (value
+          (string
+            (string_fragment)))))))
+
+============================
+Test Quoted Type Mixed Forms
+============================
+
+( "tag" ) "node" #"prop"# = #true
+
+---
+
+(document
+  (node
+    (type
+      (identifier
+        (string
+          (string_fragment))))
+    (identifier
+      (string
+        (string_fragment)))
+    (node_field
+      (prop
+        (identifier
+          (string
+            (string_fragment)))
+        (value
+          (keyword
+            (boolean)))))))
+
+=================================
+Test Slashdash Field And Children
+=================================
+
+node /- old=true /- "old arg" /- {
+  child
+}
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (node_field_comment
+        (prop
+          (identifier)
+          (value
+            (keyword
+              (boolean))))))
+    (node_field
+      (node_field_comment
+        (value
+          (string
+            (string_fragment)))))
+    (node_children_comment
+      (node_children
+        (node
+          (identifier))))))
+
+============================
+Test Slashdash Prop And Keep
+============================
+
+node /- old=true keep=true
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (node_field_comment
+        (prop
+          (identifier)
+          (value
+            (keyword
+              (boolean))))))
+    (node_field
+      (prop
+        (identifier)
+        (value
+          (keyword
+            (boolean)))))))
+
+===========================
+Test Slashdash Arg And Keep
+===========================
+
+node /- "old" keep="new"
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (node_field_comment
+        (value
+          (string
+            (string_fragment)))))
+    (node_field
+      (prop
+        (identifier)
+        (value
+          (string
+            (string_fragment)))))))
+
+===========================
+Test Slashdash Version Hint
+===========================
+/- kdl-version 2
+node #true
+
+---
+
+(document
+  (version)
+  (node
+    (identifier)
+    (node_field
+      (value
+        (keyword
+          (boolean))))))
+
+========================================
+Test V2 Raw Multiline String Indentation
+========================================
+
+node ##"""
+  hello
+  world
+  """##
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (string_fragment))))))
+
+========================================
+Test V2 Raw Multiline String With Quotes
+========================================
+
+node ##"""
+  hello "" world
+  """##
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (string_fragment))))))
+
+====================
+V2 Base85 Annotation
+====================
+
+node (base85)"x"
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (type
+          (identifier))
+        (string
+          (string_fragment))))))
+
+====================================
+V2 Multiline Dedents To Closing Line
+====================================
+
+node """
+      hey
+    everyone
+    """
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (multi_line_string
+            (string_fragment)))))))
+
+================================================
+V2 Multiline Escaped Newline Before Closing Line
+================================================
+
+node """
+    a
+   \
+"""
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (value
+        (string
+          (multi_line_string
+            (string_fragment)
+            (escaped_whitespace)))))))
+
+===============================
+V2 Entry Requires Leading Space
+===============================
+
+node foo="v"bar=5
+
+---
+
+(document
+  (node
+    (identifier)
+    (node_field
+      (prop
+        (identifier)
+        (value
+          (string
+            (string_fragment)))))
+    (ERROR
+      (decimal))))

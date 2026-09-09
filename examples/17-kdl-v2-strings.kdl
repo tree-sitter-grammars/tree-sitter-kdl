@@ -1,0 +1,14 @@
+( "tag" ) "quoted node" key = #true
+
+raw-string #"hello, world"#
+
+multi-line """
+hello
+world
+"""
+
+raw-multi-line #"""
+raw
+multiline
+string
+"""#

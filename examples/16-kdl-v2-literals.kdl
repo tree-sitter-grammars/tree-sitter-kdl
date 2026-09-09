@@ -1,0 +1,5 @@
+enabled #true
+disabled #false
+empty #null
+
+limits #inf #-inf #nan
