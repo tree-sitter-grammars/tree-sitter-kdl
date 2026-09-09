@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(tree-sitter-kdl
-        VERSION "1.1.0"
+        VERSION "2.0.0"
         DESCRIPTION "KDL grammar for tree-sitter"
         HOMEPAGE_URL "https://github.com/amaanq/tree-sitter-kdl"
         LANGUAGES C)

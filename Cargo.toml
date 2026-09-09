@@ -11,7 +11,7 @@ keywords = [ "incremental", "parsing", "tree-sitter", "kdl" ]
 license = "MIT"
 name = "tree-sitter-kdl"
 repository = "https://github.com/amaanq/tree-sitter-kdl"
-version = "1.1.0"
+version = "2.0.0"
 
 build = "bindings/rust/build.rs"
 include = [ "bindings/rust/*", "grammar.js", "queries/*", "src/*", "tree-sitter.json", "/LICENSE" ]

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.0
+
+* Add support for KDL 2 syntax while retaining backwards compatibility
+* Update bindings and metadata for current Tree-sitter releases
+* Emit `escape` and `escaped_whitespace` as siblings of `string_fragment` in
+  quoted strings.
+* Reject disallowed literal code points and surrogate escapes written with
+  leading zeros
+* Expose the body of every raw string as a `string_fragment`
+
 ## [1.1.0](https://github.com/amaanq/tree-sitter-kdl/compare/v1.0.3...v1.1.0) (2023-05-13)
 
 
