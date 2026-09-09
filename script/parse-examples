@@ -30,18 +30,26 @@ clone_repo kdl-org kdl-rs 8c028e5ea189470f07c5c848ab778f3d63ba89ab
 clone_repo kdl-org kdljs bb874a595e6f712950795ecaad62f24fd945f03d
 clone_repo kdl-org kdl-php 390fdc5ab8e2749feb01a113e8feb028de0861b3
 
-known_failures="$(cat script/known_failures.txt)"
+declare -A known_failures=()
+while IFS= read -r file; do
+	known_failures["$file"]=1
+done < script/known_failures.txt
 
 # Remove input directories
 find examples -type d -name input -exec rm -rf {} +
 
-# shellcheck disable=2046
-tree-sitter parse -q \
-	'examples/**/*.kdl' \
-	$(for file in $known_failures; do echo "!${file}"; done)
+mapfile -t example_files < <(find examples -name "*.kdl")
+files_to_parse=()
+for file in "${example_files[@]}"; do
+	if [[ -z "${known_failures[$file]:-}" ]]; then
+		files_to_parse+=("$file")
+	fi
+done
 
-example_count=$(find examples -name "*.kdl" | wc -l)
-failure_count=$(wc -w <<<"$known_failures")
+tree-sitter parse -q "${files_to_parse[@]}"
+
+example_count=${#example_files[@]}
+failure_count=${#known_failures[@]}
 success_count=$((example_count - failure_count))
 success_percent=$(bc -l <<<"100*${success_count}/${example_count}")
 
