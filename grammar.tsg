@@ -1,189 +1,326 @@
 // KDL grammar for tree-sitter (native DSL).
-// Translated from grammar.js.
+// Supports both the KDL 1 and KDL 2 syntax.
 
-let ANNOTATION_BUILTINS: list_t<str_t> = [
-    "i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "isize", "usize",
-    "f32", "f64", "decimal64", "decimal128",
-    "date-time", "time", "date", "duration", "decimal", "currency",
-    "country-2", "country-3", "country-subdivision",
-    "email", "idn-email", "hostname", "idn-hostname",
-    "ipv4", "ipv6", "url", "url-reference", "irl", "iri-reference",
-    "url-template", "uuid", "regex", "base64",
-]
+let BOOLEAN_KEYWORDS: list_t<str_t> = ["true", "false", "#true", "#false"]
+let NULL_KEYWORDS: list_t<str_t> = ["null", "#null"]
+let KEYWORD_NUMBERS: list_t<str_t> = ["#inf", "#-inf", "#nan"]
+
+let UNICODE_SPACES: str_t = r"\u0009\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000"
+let NEWLINES: str_t = r"\r\n\u0085\u000B\u000C\u2028\u2029"
+let DISALLOWED_LITERAL: str_t =
+    r"\u0000-\u0008\u000E-\u001F\u007F\u200E\u200F\u202A-\u202E\u2066-\u2069\uFEFF"
+let IDENTIFIER_EXCLUSIONS: str_t = concat(
+    UNICODE_SPACES,
+    NEWLINES,
+    DISALLOWED_LITERAL,
+    r##"\\\/(){};\[\]"="##,
+)
+let IDENTIFIER_CHAR: str_t = concat("[^", IDENTIFIER_EXCLUSIONS, "]")
+let IDENTIFIER_START: str_t = concat("[^", IDENTIFIER_EXCLUSIONS, r"0-9+\-]")
+let IDENTIFIER_START_AFTER_SIGN: str_t = concat("[^", IDENTIFIER_EXCLUSIONS, "0-9]")
+let STRING_CHAR: str_t = concat(r##"[^"\\"##, DISALLOWED_LITERAL, "]")
+let SIGN: str_t = "[+-]"
+let DIGITS: str_t = "[0-9][0-9_]*"
+
+let HEX_CHARS: str_t = "0-9a-fA-F"
+let HEX: str_t = concat("[", HEX_CHARS, "]")
+let NON_SURROGATE_4: str_t = concat(
+    "(?:[0-9a-cA-Ce-fE-F]", HEX, "{3}|[dD][0-7]", HEX, "{2})",
+)
+let SCALAR_5: str_t = concat("(?:[1-9a-fA-F]", HEX, "{4}|0", NON_SURROGATE_4, ")")
+let SCALAR_6: str_t = concat("(?:0", SCALAR_5, "|10", HEX, "{4})")
+let UNICODE_SCALAR_ESCAPE: str_t = concat(
+    r"u\{(?:",
+    HEX,
+    "{1,3}|",
+    NON_SURROGATE_4,
+    "|",
+    SCALAR_5,
+    "|",
+    SCALAR_6,
+    r")\}",
+)
+
+macro linespaced_nodes() rule_t {
+    seq(repeat(_linespace), repeat(seq(node, repeat(_linespace))))
+}
+
+macro commented_child_block() rule_t {
+    seq(repeat(_node_space), field(children, node_children_comment))
+}
+
+macro child_block() rule_t {
+    seq(repeat(_node_space), field(children, node_children))
+}
+
+macro child_blocks() rule_t {
+    seq(
+        repeat(commented_child_block()),
+        optional(seq(child_block(), repeat(commented_child_block()))),
+    )
+}
 
 grammar {
     language: "kdl",
-    conflicts: [[document], [_node_space], [node_children]],
-    externals: [_eof, multi_line_comment, _raw_string],
+    conflicts: [[version, _ws], [identifier, value]],
+    externals: [
+        _eof,
+        multi_line_comment,
+        _raw_string_start,
+        _raw_string_content,
+        _raw_string_end,
+    ],
     extras: [multi_line_comment],
     word: _normal_bare_identifier,
 }
 
 rule document {
-    seq(
-        repeat(_linespace),
-        optional(seq(node, repeat(seq(repeat(_linespace), node)))),
-        repeat(_linespace),
-    )
+    seq(optional(_bom), optional(field(version, version)), linespaced_nodes())
 }
 
-rule node {
-    prec(1, seq(
-        alias(optional(seq("/-", repeat(_node_space))), node_comment),
-        optional(type),
-        identifier,
-        repeat(seq(repeat1(_node_space), node_field)),
-        optional(seq(repeat(_node_space), field(children, node_children), repeat(_ws))),
-        repeat(_node_space),
-        _node_terminator,
+rule version {
+    prec(2, seq(
+        "/-",
+        repeat(_unicode_space),
+        "kdl-version",
+        repeat1(_unicode_space),
+        field(version, choice("1", "2")),
+        repeat(_unicode_space),
+        _newline,
     ))
 }
 
-rule node_field { choice(_node_field_comment, _node_field) }
+rule node { seq(_base_node, _node_terminator) }
 
-rule _node_field_comment {
-    alias(seq("/-", repeat(_node_space), _node_field), node_field_comment)
+rule _final_node { seq(alias(_base_node, node), "}") }
+
+rule _base_node {
+    seq(
+        optional(node_comment),
+        optional(seq(field(type, type), repeat(_node_space))),
+        field(name, identifier),
+        repeat(node_field),
+        child_blocks(),
+        repeat(_node_space),
+    )
 }
 
-rule _node_field { choice(prop, value) }
+rule node_field {
+    choice(
+        seq(repeat1(_node_space), _node_field),
+        seq(repeat(_node_space), node_field_comment),
+    )
+}
+
+rule node_comment { seq("/-", repeat(_linespace)) }
+
+rule node_field_comment { seq("/-", repeat(_linespace), _node_field) }
+
+rule _node_field {
+    choice(field(property, prop), field(argument, value))
+}
+
+rule node_children_comment { seq("/-", repeat(_linespace), node_children) }
 
 rule node_children {
     seq(
-        optional(seq(alias("/-", node_children_comment), repeat(_node_space))),
         "{",
-        seq(
-            repeat(_linespace),
-            optional(seq(node, repeat(seq(repeat(_linespace), node)))),
-            repeat(_linespace),
-        ),
-        "}",
+        repeat(choice(_linespace, node)),
+        choice("}", _final_node),
     )
 }
 
-rule _node_space {
-    choice(
-        seq(repeat(_ws), _escline, repeat(_ws)),
-        repeat1(_ws),
-    )
-}
+rule _node_space { choice(_ws, _escline) }
 
 rule _node_terminator { choice(single_line_comment, _newline, ";", _eof) }
 
 rule identifier { choice(string, _bare_identifier) }
 
-rule _bare_identifier {
+rule _bare_identifier { choice(_normal_bare_identifier, _signed_bare_identifier) }
+
+rule _normal_bare_identifier {
+    token(regexp(concat(IDENTIFIER_START, IDENTIFIER_CHAR, "*")))
+}
+
+rule _signed_bare_identifier {
+    token(regexp(concat(SIGN, "(?:", IDENTIFIER_START_AFTER_SIGN, IDENTIFIER_CHAR, "*)?")))
+}
+
+rule keyword {
     choice(
-        _normal_bare_identifier,
-        seq(_sign, optional(seq(__identifier_char_no_digit, repeat(_identifier_char)))),
+        boolean,
+        for (value: str_t) in NULL_KEYWORDS { token(prec(2, value)) },
     )
 }
 
-rule _normal_bare_identifier {
-    token(seq(
-        regexp(r#"[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}_~!@#\$%\^&\*.:'\|\?&&[^\s\d\/(){}<>;\[\]=,"]]"#),
-        regexp(r#"[\u4E00-\u9FFF\p{L}\p{M}\p{N}\p{Emoji}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]*"#),
+rule prop {
+    seq(
+        field(key, identifier),
+        repeat(_node_space),
+        "=",
+        repeat(_node_space),
+        field(value, value),
+    )
+}
+
+rule value {
+    seq(
+        optional(seq(field(type, type), repeat(_node_space))),
+        field(value, choice(string, alias(_bare_identifier, string), number, keyword)),
+    )
+}
+
+rule type {
+    seq(
+        "(",
+        repeat(_node_space),
+        field(name, identifier),
+        repeat(_node_space),
+        ")",
+    )
+}
+
+rule string { choice(_raw_string, multi_line_string, _escaped_string) }
+
+rule _raw_string {
+    seq(
+        _raw_string_start,
+        optional(alias(_raw_string_content, string_fragment)),
+        _raw_string_end,
+    )
+}
+
+rule multi_line_string {
+    seq(
+        _multiline_open,
+        repeat(choice(
+            alias(_multiline_fragment, string_fragment),
+            escape,
+            escaped_whitespace,
+        )),
+        "\"\"\"",
+    )
+}
+
+rule _multiline_open {
+    token(seq("\"\"\"", choice("\r\n", regexp(concat("[", NEWLINES, "]")))))
+}
+
+rule _multiline_fragment {
+    token_immediate(regexp(concat(
+        "(?:",
+        STRING_CHAR,
+        "|\"",
+        STRING_CHAR,
+        "|\"\"",
+        STRING_CHAR,
+        ")+",
+    )))
+}
+
+rule _escaped_string {
+    seq(
+        "\"",
+        repeat(choice(
+            alias(_string_fragment, string_fragment),
+            escape,
+            escaped_whitespace,
+        )),
+        "\"",
+    )
+}
+
+rule _string_fragment {
+    token_immediate(regexp(concat(STRING_CHAR, "+")))
+}
+
+rule escape {
+    token_immediate(seq(
+        "\\",
+        choice(
+            "\\",
+            "\"",
+            "/",
+            "b",
+            "f",
+            "n",
+            "r",
+            "t",
+            "s",
+            regexp(UNICODE_SCALAR_ESCAPE),
+        ),
     ))
 }
 
-rule _identifier_char {
-    token(regexp(r#"[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\/(){}<>;\[\]=,"]]"#))
+rule escaped_whitespace {
+    token_immediate(regexp(concat(r"\\(?:\r\n|[", UNICODE_SPACES, NEWLINES, "])+")))
 }
 
-rule __identifier_char_no_digit {
-    token(regexp(r#"[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?+&&[^\s\d\/(){}<>;\[\]=,"]]"#))
-}
-
-rule __identifier_char_no_digit_sign {
-    token(regexp(r#"[\u4E00-\u9FFF\p{L}\p{M}\p{N}\-_~!@#\$%\^&\*.:'\|\?&&[^\s\d\+\-\/(){}<>;\[\]=,"]]"#))
-}
-
-rule keyword { choice(boolean, "null") }
-
-rule annotation_type {
-    choice(for (a: str_t) in ANNOTATION_BUILTINS { a })
-}
-
-rule prop { seq(identifier, "=", value) }
-
-rule value { seq(optional(type), choice(string, number, keyword)) }
-
-rule type { seq("(", choice(identifier, annotation_type), ")") }
-
-rule string { choice(_raw_string, _escaped_string) }
-
-rule _escaped_string {
-    seq("\"", alias(repeat(choice(escape, regexp(r#"[^"]"#))), string_fragment), "\"")
-}
-
-rule _character { choice(escape, regexp(r#"[^"]"#)) }
-
-rule escape {
-    token_immediate(regexp(r#"\\\\|\\"|\\\/|\\b|\\f|\\n|\\r|\\t|\\u\{[0-9a-fA-F]{1,6}\}"#))
-}
-
-rule _hex_digit { regexp(r"[0-9a-fA-F]") }
-
-rule number { choice(_decimal, _hex, _octal, _binary) }
+rule number { choice(keyword_number, _decimal, _hex, _octal, _binary) }
 
 rule _decimal {
     seq(
-        optional(_sign),
         _integer,
-        optional(seq(".", alias(_integer, decimal))),
+        optional(seq(".", alias(_fraction, decimal))),
         optional(alias(_exponent, exponent)),
     )
 }
 
-rule _exponent { seq(choice("e", "E"), optional(_sign), _integer) }
+rule _integer { token(regexp(concat(SIGN, "?", DIGITS))) }
 
-rule _integer { seq(_digit, repeat(choice(_digit, "_"))) }
+rule _fraction { token_immediate(regexp(DIGITS)) }
 
-rule _digit { regexp(r"[0-9]") }
-
-rule _sign { choice("+", "-") }
-
-rule _hex { seq(optional(_sign), "0x", _hex_digit, repeat(choice(_hex_digit, "_"))) }
-
-rule _octal {
-    seq(optional(_sign), "0o", regexp(r"[0-7]"), repeat(choice(regexp(r"[0-7]"), "_")))
+rule _exponent {
+    token_immediate(regexp(concat("[eE]", SIGN, "?", DIGITS)))
 }
 
-rule _binary {
-    seq(optional(_sign), "0b", choice("0", "1"), repeat(choice("0", "1", "_")))
+rule _hex {
+    token(regexp(concat(SIGN, "?0x", HEX, "[", HEX_CHARS, "_]*")))
 }
 
-rule boolean { choice("true", "false") }
+rule _octal { token(regexp(concat(SIGN, "?0o[0-7][0-7_]*"))) }
+
+rule _binary { token(regexp(concat(SIGN, "?0b[01][01_]*"))) }
+
+rule keyword_number {
+    choice(for (value: str_t) in KEYWORD_NUMBERS { token(prec(2, value)) })
+}
+
+rule boolean {
+    choice(for (value: str_t) in BOOLEAN_KEYWORDS { token(prec(2, value)) })
+}
 
 rule _escline {
-    seq("\\", repeat(_ws), choice(single_line_comment, _newline))
+    seq("\\", repeat(_ws), choice(single_line_comment, _newline, _eof))
 }
 
-rule _linespace { choice(_newline, _ws, single_line_comment) }
+rule _linespace { choice(_ws, _escline, _newline, single_line_comment) }
 
 rule _newline {
     choice(
-        regexp(r"\r'"),
-        regexp(r"\n"),
         regexp(r"\r\n"),
+        regexp(r"\r"),
+        regexp(r"\n"),
         regexp(r"\u0085"),
+        regexp(r"\u000B"),
         regexp(r"\u000C"),
         regexp(r"\u2028"),
         regexp(r"\u2029"),
     )
 }
 
-rule _ws { choice(_bom, _unicode_space, multi_line_comment) }
+rule _ws { choice(_unicode_space, multi_line_comment) }
 
 rule _bom { regexp(r"\u{FEFF}") }
 
 rule _unicode_space {
-    regexp(r"[	 \u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000]")
+    regexp(r"[\u0009\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000]")
 }
 
 rule single_line_comment {
     seq(
         "//",
-        repeat(regexp(r"[^\r\n\u0085\u000C\u2028\u2029]")),
+        repeat(regexp(r"[^\r\n\u0085\u000B\u000C\u2028\u2029]")),
         choice(_newline, _eof),
     )
 }
